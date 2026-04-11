@@ -57,8 +57,8 @@ public class SalesTargetService {
         LocalDate startDate = salesTarget.getPeriodStart();
         LocalDate endDate = salesTarget.getPeriodEnd();
         
-        List<Sale> sales = saleRepository.findByEmployeeAndSaleDateBetween(
-                salesTarget.getEmployee(), startDate, endDate);
+        List<Sale> sales = saleRepository.findByCreatedByIdAndSaleDateBetween(
+                salesTarget.getEmployee().getId(), startDate, endDate);
         
         // If target is product-specific, filter by product
         if (salesTarget.getProduct() != null) {
@@ -68,7 +68,7 @@ public class SalesTargetService {
         }
         
         BigDecimal total = sales.stream()
-                .filter(s -> "COMPLETED".equals(s.getStatus()))
+                .filter(s -> "COMPLETED".equals(s.getSaleStatus()))
                 .map(Sale::getTotalAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         
@@ -176,6 +176,13 @@ public class SalesTargetService {
             // If target not achieved, return base salary only
             return base;
         }
+    }
+
+    public List<SalesTarget> getSalesTargetsForEmployeeHierarchy(Employee employee) {
+        if (employee == null) return List.of();
+        List<Long> ids = employeeService.getAllReportingEmployeeIds(employee);
+        // your method already includes self, so no need to add again if it does
+        return salesTargetRepository.findByEmployee_IdInOrderByPeriodStartDesc(ids);
     }
 }
 

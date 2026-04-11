@@ -15,7 +15,7 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @Column(unique = true, length = 8)
+    @Column(unique = true, length = 10)
     private String productId;
     
     @NotBlank(message = "Product name is required")

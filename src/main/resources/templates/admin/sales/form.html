@@ -37,15 +37,15 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label">Employee *</label>
+                                <label class="form-label">Created By Employee *</label>
                                 <select class="form-select" name="employeeId" required>
                                     <option value="">Select Employee</option>
-                                    <option th:each="emp : ${employees}" 
-                                            th:value="${emp.id}" 
+                                    <option th:each="emp : ${employees}"
+                                            th:value="${emp.id}"
                                             th:text="${emp.fullName}"
-                                            th:selected="${sale != null and sale.employee != null and sale.employee.id == emp.id}"></option>
+                                            th:selected="${sale != null and sale.createdById != null and sale.createdById == emp.id}"></option>
                                 </select>
-                                <span class="text-danger" th:if="${#fields.hasErrors('employee')}" th:errors="*{employee}"></span>
+                                <span class="text-danger" th:if="${#fields.hasErrors('createdById')}" th:errors="*{createdById}"></span>
                             </div>
                         </div>
                         <div class="col-md-6">

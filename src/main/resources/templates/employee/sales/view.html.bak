@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sale Details - Employee Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        <header class="top-header">
+            <div class="header-left">
+                <button class="mobile-menu-toggle" onclick="toggleMobileSidebar()" title="Toggle Sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <button class="sidebar-expand-toggle" onclick="toggleSidebar()" title="Expand/Collapse Sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <div class="company-name">Potens Green</div>
+            <form th:action="@{/logout}" method="post" style="display: inline;">
+                <button type="submit" class="logout-btn">Logout</button>
+            </form>
+        </header>
+
+        <div th:replace="~{fragments/employee-sidebar :: sidebar}"></div>
+
+        <main class="main-content">
+            <div class="container">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1><i class="fas fa-shopping-cart"></i> Sale Details</h1>
+                    <div>
+                        <a th:href="@{/employee/sales/{id}/payments/add(id=${sale.id})}" class="btn btn-success" th:if="${remainingAmount.compareTo(new java.math.BigDecimal('0')) > 0}">
+                            <i class="fas fa-money-bill-wave"></i> Add Payment
+                        </a>
+                        <a th:href="@{/employee/sales}" class="btn btn-secondary">Back to List</a>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>Sale Information</h5>
+                                <table class="table">
+                                    <tr>
+                                        <th>Sale ID:</th>
+                                        <td th:text="${sale.saleId != null ? sale.saleId : '-'}"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Sale Date:</th>
+                                        <td th:text="${#temporals.format(sale.saleDate, 'yyyy-MM-dd')}"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Product/Service:</th>
+                                        <td th:text="${sale.productName}"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Quantity:</th>
+                                        <td th:text="${sale.quantity}"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Unit Price:</th>
+                                        <td>₹<span th:text="${#numbers.formatDecimal(sale.unitPrice, 0, 'COMMA', 2, 'POINT')}"></span></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Total Amount:</th>
+                                        <td><strong>₹<span th:text="${#numbers.formatDecimal(sale.totalAmount, 0, 'COMMA', 2, 'POINT')}"></strong></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Payment Status:</th>
+                                        <td>
+                                            <span class="badge"
+                                                  th:classappend="${sale.paymentStatus == 'COMPLETED'} ? 'badge-success' :
+                                                                  (${sale.paymentStatus == 'PARTIAL'} ? 'badge-warning text-dark' :
+                                                                  (${sale.paymentStatus == 'PENDING'} ? 'badge-info' : 'badge-danger'))"
+                                                  th:text="${sale.paymentStatus}">PENDING</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Sale Status:</th>
+                                        <td>
+                                            <span th:if="${sale.saleStatus == 'COMPLETED'}"
+                                                  th:class="'badge badge-success'"
+                                                  th:text="'COMPLETED'">COMPLETED</span>
+                                            <span th:if="${sale.saleStatus == 'IN_PROGRESS'}"
+                                                  th:class="'badge badge-info'"
+                                                  th:text="'IN_PROGRESS'">IN_PROGRESS</span>
+                                            <span th:if="${sale.saleStatus == 'CANCELLED'}"
+                                                  th:class="'badge badge-danger'"
+                                                  th:text="'CANCELLED'">CANCELLED</span>
+                                            <span th:if="${sale.saleStatus != 'COMPLETED' and sale.saleStatus != 'IN_PROGRESS' and sale.saleStatus != 'CANCELLED'}"
+                                                  th:class="'badge badge-warning'"
+                                                  th:text="${sale.saleStatus}">UNKNOWN</span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>Related Information</h5>
+                                <table class="table">
+                                    <tr>
+                                        <th>Created By:</th>
+                                        <td th:text="${createdByEmployee != null ? createdByEmployee.fullName : 'Unknown'}"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Contact Person:</th>
+                                        <td th:text="${sale.customer.contactPerson}"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Customer Email:</th>
+                                        <td th:text="${sale.customer.email}"></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Commission Information -->
+                        <div class="row mt-4" th:if="${commissions != null and !commissions.isEmpty()}">
+                            <div class="col-md-12">
+                                <h5>Commission Information</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Commission Amount</th>
+                                                <th>Status</th>
+                                                <th>Created Date</th>
+                                                <th>Approved By</th>
+                                                <th>Approved Date</th>
+                                                <th th:if="${canApproveCommissions}">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="commission : ${commissions}">
+                                                <td><strong>₹<span th:text="${#numbers.formatDecimal(commission.amount, 0, 'COMMA', 2, 'POINT')}">0.00</span></strong></td>
+                                                <td>
+                                                    <span th:if="${commission.status == 'APPROVED'}" class="badge badge-success">Approved</span>
+                                                    <span th:if="${commission.status == 'PENDING_APPROVAL'}" class="badge badge-warning">Pending Approval</span>
+                                                    <span th:if="${commission.status == 'REJECTED'}" class="badge badge-danger">Rejected</span>
+                                                </td>
+                                                <td th:text="${#temporals.format(commission.createdAt, 'yyyy-MM-dd HH:mm')}">Date</td>
+                                                <td th:text="${commission.approvedBy != null ? commission.approvedBy.fullName : '-'}">-</td>
+                                                <td th:text="${commission.approvedAt != null ? #temporals.format(commission.approvedAt, 'yyyy-MM-dd HH:mm') : '-'}">-</td>
+                                                <td th:if="${canApproveCommissions}">
+                                                    <form th:if="${commission.status == 'PENDING_APPROVAL'}"
+                                                          th:action="@{/employee/sales/approve-commission/{id}(id=${commission.id})}"
+                                                          method="post"
+                                                          style="display: inline;">
+                                                        <input type="hidden" name="saleId" th:value="${sale.id}" />
+                                                        <button type="submit" class="btn btn-success btn-sm" title="Approve Commission">
+                                                            <i class="fas fa-check"></i> Approve
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4" th:if="${sale.description != null and !sale.description.isEmpty()}">
+                            <h5>Description</h5>
+                            <p th:text="${sale.description}"></p>
+                        </div>
+                        <div class="mt-4" th:if="${sale.notes != null and !sale.notes.isEmpty()}">
+                            <h5>Notes</h5>
+                            <p th:text="${sale.notes}"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Transactions Section -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-money-bill-wave"></i> Payment Transactions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table" th:if="${payments != null and !payments.isEmpty()}">
+                                <thead>
+                                    <tr>
+                                        <th>Invoice #</th>
+                                        <th>Payment Date</th>
+                                        <th>Amount</th>
+                                        <th>Transaction Mode</th>
+                                        <th>Transaction ID</th>
+                                        <th>Settlement Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="payment : ${payments}">
+                                        <td>
+                                            <strong th:text="${payment.invoiceNumber != null ? payment.invoiceNumber : 'N/A'}">INV-000001</strong>
+                                        </td>
+                                        <td th:text="${#temporals.format(payment.paymentDate, 'yyyy-MM-dd HH:mm')}">2026-01-23</td>
+                                        <td><strong>₹<span th:text="${#numbers.formatDecimal(payment.amount, 0, 'COMMA', 2, 'POINT')}">0.00</span></strong></td>
+                                        <td>
+                                            <span class="badge"
+                                                  th:classappend="${payment.transactionMode == 'CASH'} ? 'badge-success' :
+                                                                  (${payment.transactionMode == 'UPI'} ? 'badge-info' : 'badge-primary')"
+                                                  th:text="${payment.transactionMode}">CASH</span>
+                                        </td>
+                                        <td th:text="${payment.transactionId != null ? payment.transactionId : '-'}">-</td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge me-2"
+                                                      th:classappend="${payment.settled == true} ? 'badge-success' : 'badge-warning'"
+                                                      th:text="${payment.settled == true ? 'Settled' : 'Not Settled'}">Not Settled</span>
+                                                <span th:if="${payment.settledBy != null}" class="text-muted small">
+                                                    by <span th:text="${payment.settledBy.fullName}">Admin</span>
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <a th:href="@{/employee/transactions/view/{id}(id=${payment.id})}" class="btn btn-info btn-sm">
+                                                    <i class="fas fa-eye"></i> View
+                                                </a>
+                                                <a th:href="@{/employee/transactions/invoice/{id}(id=${payment.id})}" class="btn btn-success btn-sm" target="_blank" th:if="${payment.settled == true and payment.invoiceNumber != null and !payment.invoiceNumber.isEmpty()}">
+                                                    <i class="fas fa-file-invoice"></i> Invoice
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div th:if="${payments == null or payments.isEmpty()}" class="empty-state">
+                            <p>No payment transactions found for this sale.</p>
+                        </div>
+
+                        <!-- Payment Summary -->
+                        <div class="row mt-3" th:if="${payments != null and !payments.isEmpty()}">
+                            <div class="col-md-12">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h6>Payment Summary</h6>
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <strong>Total Sale Amount:</strong><br>
+                                                ₹<span th:text="${#numbers.formatDecimal(sale.totalAmount, 0, 'COMMA', 2, 'POINT')}">0.00</span>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <strong>Total Paid:</strong><br>
+                                                ₹<span th:text="${totalPaid != null ? #numbers.formatDecimal(totalPaid, 0, 'COMMA', 2, 'POINT') : '0.00'}">0.00</span>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <strong>Remaining Balance:</strong><br>
+                                                <span th:classappend="${remainingAmount != null and remainingAmount.compareTo(new java.math.BigDecimal('0')) > 0} ? 'text-danger' : 'text-success'">
+                                                    ₹<span th:text="${remainingAmount != null ? #numbers.formatDecimal(remainingAmount, 0, 'COMMA', 2, 'POINT') : #numbers.formatDecimal(sale.totalAmount, 0, 'COMMA', 2, 'POINT')}">0.00</span>
+                                                </span>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <strong>Payment Status:</strong><br>
+                                                <span class="badge"
+                                                      th:classappend="${remainingAmount != null and remainingAmount.compareTo(new java.math.BigDecimal('0')) == 0} ? 'badge-success' : 'badge-warning'"
+                                                      th:text="${remainingAmount != null and remainingAmount.compareTo(new java.math.BigDecimal('0')) == 0 ? 'Fully Paid' : 'Partial Payment'}">Partial Payment</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/sidebar.js}"></script>
+</body>
+</html>

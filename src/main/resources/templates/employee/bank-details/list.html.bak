@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank Details - Employee Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        <!-- Top Header -->
+        <header class="top-header">
+            <div class="header-left">
+                <button class="mobile-menu-toggle" onclick="toggleMobileSidebar()" title="Toggle Sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <button class="sidebar-expand-toggle" onclick="toggleSidebar()" title="Expand/Collapse Sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <div class="company-name">Potens Green</div>
+            <form th:action="@{/logout}" method="post" style="display: inline;">
+                <button type="submit" class="logout-btn">Logout</button>
+            </form>
+        </header>
+
+        <!-- Sidebar -->
+        <div th:replace="~{fragments/employee-sidebar :: sidebar}"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="container">
+        <div th:if="${message}" class="alert alert-success mt-4" role="alert">
+            <span th:text="${message}"></span>
+        </div>
+        <div th:if="${error}" class="alert alert-danger mt-4" role="alert">
+            <span th:text="${error}"></span>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-4 mt-4">
+            <h1>Bank Details</h1>
+            <a th:href="@{/employee/bank-details/new}" class="btn btn-primary">Add Bank Details</a>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div th:if="${bankDetailsList != null and !bankDetailsList.isEmpty()}">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Account Holder Name</th>
+                                <th>Account Number</th>
+                                <th>Bank Name</th>
+                                <th>IFSC Code</th>
+                                <th>Account Type</th>
+                                <th>Primary</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="bankDetail : ${bankDetailsList}">
+                                <td th:text="${bankDetail.accountHolderName}"></td>
+                                <td th:text="${bankDetail.accountNumber}"></td>
+                                <td th:text="${bankDetail.bankName}"></td>
+                                <td th:text="${bankDetail.ifscCode}"></td>
+                                <td th:text="${bankDetail.accountType}"></td>
+                                <td>
+                                    <span class="badge" th:classappend="${bankDetail.isPrimary} ? 'badge-success' : 'badge-secondary'"
+                                          th:text="${bankDetail.isPrimary} ? 'Yes' : 'No'">No</span>
+                                </td>
+                                <td>
+                                    <a th:href="@{/employee/bank-details/edit/{id}(id=${bankDetail.id})}" class="btn btn-sm btn-warning">Edit</a>
+                                    <a th:href="@{/employee/bank-details/delete/{id}(id=${bankDetail.id})}" 
+                                       class="btn btn-sm btn-danger"
+                                       onclick="return confirm('Are you sure you want to delete this bank detail?')">Delete</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div th:if="${bankDetailsList == null or bankDetailsList.isEmpty()}" class="text-center py-4">
+                    <p>No bank details found. <a th:href="@{/employee/bank-details/new}">Add your first bank detail</a></p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/sidebar.js}"></script>
+</body>
+</html>

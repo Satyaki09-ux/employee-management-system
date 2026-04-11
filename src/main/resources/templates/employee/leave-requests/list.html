@@ -10,20 +10,7 @@
 </head>
 <body>
     <div class="dashboard-wrapper">
-        <header class="top-header">
-            <div class="header-left">
-                <button class="mobile-menu-toggle" onclick="toggleMobileSidebar()" title="Toggle Sidebar">
-                    <i class="fas fa-bars"></i>
-                </button>
-                <button class="sidebar-expand-toggle" onclick="toggleSidebar()" title="Expand/Collapse Sidebar">
-                    <i class="fas fa-bars"></i>
-                </button>
-            </div>
-            <div class="company-name">Potens Green</div>
-            <form th:action="@{/logout}" method="post" style="display: inline;">
-                <button type="submit" class="logout-btn">Logout</button>
-            </form>
-        </header>
+                <div th:replace="~{fragments/employee-header :: header}"></div>
         <div th:replace="~{fragments/employee-sidebar :: sidebar}"></div>
         <main class="main-content">
             <div class="container">

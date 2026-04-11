@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Portal User Guide - Potens Green</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        @media print {
+            @page {
+                size: A4;
+                margin: 2cm;
+            }
+            body {
+                margin: 0;
+            }
+            .page-break {
+                page-break-before: always;
+            }
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #fff;
+        }
+        
+        h1 {
+            color: #28a745;
+            border-bottom: 3px solid #28a745;
+            padding-bottom: 10px;
+            margin-top: 30px;
+        }
+        
+        h2 {
+            color: #155724;
+            border-bottom: 2px solid #28a745;
+            padding-bottom: 8px;
+            margin-top: 25px;
+        }
+        
+        h3 {
+            color: #28a745;
+            margin-top: 20px;
+        }
+        
+        h4 {
+            color: #155724;
+            margin-top: 15px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: linear-gradient(135deg, #28a745 0%, #155724 100%);
+            color: white;
+            border-radius: 10px;
+        }
+        
+        .header h1 {
+            color: white;
+            border: none;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .toc {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        
+        .toc ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        
+        .toc li {
+            margin: 8px 0;
+        }
+        
+        .toc a {
+            color: #28a745;
+            text-decoration: none;
+        }
+        
+        .toc a:hover {
+            text-decoration: underline;
+        }
+        
+        .note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        
+        .warning {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        
+        .info {
+            background: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        
+        table th {
+            background: #28a745;
+            color: white;
+        }
+        
+        table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        .workflow {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        
+        .workflow ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        
+        .footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 2px solid #28a745;
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        ul, ol {
+            margin: 10px 0;
+            padding-left: 30px;
+        }
+        
+        li {
+            margin: 5px 0;
+        }
+        
+        .section {
+            margin: 30px 0;
+        }
+        
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Employee Portal User Guide</h1>
+        <p><strong>Potens Green Engineering Solutions Pvt. Ltd.</strong></p>
+        <p>Version: 1.0 | Date: January 2025</p>
+    </div>
+
+    <div class="toc">
+        <h2>Table of Contents</h2>
+        <ul>
+            <li><a href="#introduction">1. Introduction</a></li>
+            <li><a href="#getting-started">2. Getting Started</a></li>
+            <li><a href="#dashboard">3. Dashboard</a></li>
+            <li><a href="#work-management">4. Work Management</a></li>
+            <li><a href="#employee-management">5. Employee Management</a></li>
+            <li><a href="#requests-approvals">6. Requests & Approvals</a></li>
+            <li><a href="#personal-information">7. Personal Information</a></li>
+            <li><a href="#common-workflows">8. Common Workflows</a></li>
+            <li><a href="#faq">9. Frequently Asked Questions</a></li>
+        </ul>
+    </div>
+
+    <div class="section" id="introduction">
+        <h2>1. Introduction</h2>
+        
+        <h3>Welcome to the Employee Portal</h3>
+        <p>The Employee Portal is your centralized platform for managing your work, tracking sales, handling customer relationships, submitting requests, and accessing your personal information. This guide will help you understand all the features and how to use them effectively.</p>
+        
+        <h3>Key Features</h3>
+        <ul>
+            <li><strong>Dashboard:</strong> Overview of your daily activities, attendance, and performance metrics</li>
+            <li><strong>Sales Management:</strong> Track sales, manage customers, and monitor transactions</li>
+            <li><strong>Target Management:</strong> Set and track sales targets for yourself and your team</li>
+            <li><strong>Request Management:</strong> Submit claims and leave requests, approve team requests</li>
+            <li><strong>Employee Management:</strong> Manage team members (for managers)</li>
+            <li><strong>Personal Information:</strong> Update profile, bank details, and view salary information</li>
+        </ul>
+    </div>
+
+    <div class="section page-break" id="getting-started">
+        <h2>2. Getting Started</h2>
+        
+        <h3>Login</h3>
+        <div class="workflow">
+            <ol>
+                <li>Navigate to the employee login page</li>
+                <li>Enter your <strong>Employee ID</strong> (username) - This is your unique ID starting with "PGES" followed by 6 alphanumeric characters</li>
+                <li>Enter your <strong>Password</strong> - Default password is the same as your Employee ID (change it after first login)</li>
+                <li>Click <strong>Login</strong></li>
+            </ol>
+        </div>
+        
+        <div class="note">
+            <strong>First Time Login:</strong>
+            <ul>
+                <li>Your default password is your Employee ID</li>
+                <li>You will be prompted to change your password after first login</li>
+                <li>Go to <strong>Profile</strong> → <strong>Reset Password</strong> to change your password</li>
+            </ul>
+        </div>
+        
+        <h3>Password Reset</h3>
+        <p>If you forget your password:</p>
+        <ol>
+            <li>Contact your administrator to reset your password</li>
+            <li>Or use the "Reset Password" option in your profile (requires current password)</li>
+        </ol>
+    </div>
+
+    <div class="section page-break" id="dashboard">
+        <h2>3. Dashboard</h2>
+        
+        <h3>Overview</h3>
+        <p>The Dashboard is your home page and provides a quick overview of:</p>
+        <ul>
+            <li>Today's attendance status</li>
+            <li>Recent sales and commissions</li>
+            <li>Pending tasks</li>
+            <li>Sales target progress</li>
+            <li>Recent claims and leave requests</li>
+        </ul>
+        
+        <h3>Key Sections</h3>
+        
+        <h4>Attendance Section</h4>
+        <ul>
+            <li><strong>Check In:</strong> Click to mark your attendance for the day</li>
+            <li><strong>Check Out:</strong> Click when leaving for the day</li>
+            <li><strong>Status:</strong> Shows your current attendance status (PRESENT, ABSENT, etc.)</li>
+        </ul>
+        
+        <h4>Sales Summary</h4>
+        <ul>
+            <li><strong>Total Sales:</strong> Your sales for the current period</li>
+            <li><strong>Pending Commissions:</strong> Commissions awaiting approval</li>
+            <li><strong>Approved Commissions:</strong> Commissions that have been approved</li>
+        </ul>
+        
+        <h4>Quick Actions</h4>
+        <ul>
+            <li>Access frequently used features directly from the dashboard</li>
+            <li>View recent activities and notifications</li>
+        </ul>
+    </div>
+
+    <div class="section page-break" id="work-management">
+        <h2>4. Work Management</h2>
+        
+        <h3>Sales Targets</h3>
+        
+        <h4>My Sales Target</h4>
+        <ul>
+            <li>View your assigned sales targets</li>
+            <li>Track progress toward achieving targets</li>
+            <li>See commission calculations based on target achievement</li>
+            <li>View target periods (start and end dates)</li>
+        </ul>
+        
+        <div class="workflow">
+            <strong>How to View Your Sales Target:</strong>
+            <ol>
+                <li>Click <strong>"My Sales Target"</strong> from the sidebar</li>
+                <li>View your current target details:
+                    <ul>
+                        <li>Product assigned</li>
+                        <li>Target units and amount</li>
+                        <li>Achieved amount</li>
+                        <li>Progress percentage</li>
+                        <li>Commission rate</li>
+                    </ul>
+                </li>
+            </ol>
+        </div>
+        
+        <h4>Manage Team Targets (For Managers)</h4>
+        <p>Managers can set and manage sales targets for their team members.</p>
+        
+        <div class="workflow">
+            <strong>How to Set Team Targets:</strong>
+            <ol>
+                <li>Click <strong>"Manage Team Targets"</strong> from the sidebar</li>
+                <li>Select the employee type (Promoters, Zonal Heads, etc.)</li>
+                <li>Click <strong>"Set Target"</strong> for a specific employee</li>
+                <li>Fill in the form:
+                    <ul>
+                        <li>Select Product</li>
+                        <li>Enter Target Units</li>
+                        <li>Set Period Start and End dates</li>
+                        <li>Set Base Salary and Commission Rate</li>
+                    </ul>
+                </li>
+                <li>Click <strong>"Save"</strong></li>
+            </ol>
+        </div>
+        
+        <div class="note">
+            <strong>Note:</strong> Only employees with hierarchy levels above AREA_SALES_MANAGER can manage team targets.
+        </div>
+        
+        <h3>Customers</h3>
+        
+        <h4>View All Customers</h4>
+        <ul>
+            <li>See a list of all customers assigned to you</li>
+            <li>Search customers by name, email, or phone</li>
+            <li>View customer details and status</li>
+        </ul>
+        
+        <h4>Add New Customer</h4>
+        <div class="workflow">
+            <ol>
+                <li>Click <strong>"Customers"</strong> → <strong>"Add New Customer"</strong></li>
+                <li>Fill in the required information:
+                    <ul>
+                        <li>Contact Person Name *</li>
+                        <li>Email *</li>
+                        <li>Phone *</li>
+                        <li>Address</li>
+                        <li>Area, City, State</li>
+                        <li>Zip Code, Country</li>
+                        <li>Status (ACTIVE, INACTIVE, POTENTIAL)</li>
+                        <li>Notes</li>
+                    </ul>
+                </li>
+                <li>Click <strong>"Save"</strong></li>
+            </ol>
+        </div>
+        
+        <h4>Edit Customer</h4>
+        <div class="workflow">
+            <ol>
+                <li>Go to <strong>Customers</strong> list</li>
+                <li>Click <strong>"View"</strong> on the customer you want to edit</li>
+                <li>Click <strong>"Edit"</strong></li>
+                <li>Update the information</li>
+                <li>Click <strong>"Save"</strong></li>
+            </ol>
+        </div>
+        
+        <h3>Sales</h3>
+        
+        <h4>Create New Sale</h4>
+        <div class="workflow">
+            <ol>
+                <li>Click <strong>"Sales"</strong> → <strong>"Add New Sale"</strong></li>
+                <li>Fill in the sale details:
+                    <ul>
+                        <li>Select Customer *</li>
+                        <li>Sale Date *</li>
+                        <li>Select Product</li>
+                        <li>Product Name (auto-filled if product selected)</li>
+                        <li>Quantity *</li>
+                        <li>Unit Price *</li>
+                        <li>Total Amount (auto-calculated)</li>
+                        <li>Due Date</li>
+                        <li>Description</li>
+                        <li>Notes</li>
+                    </ul>
+                </li>
+                <li>Click <strong>"Save"</strong></li>
+            </ol>
+        </div>
+        
+        <div class="note">
+            <strong>Note:</strong> Sale ID is automatically generated (format: PGES + 6 alphanumeric characters)
+        </div>
+        
+        <h4>View Sales List</h4>
+        <ul>
+            <li>See all your sales</li>
+            <li>Filter by date range</li>
+            <li>View sale status (IN_PROGRESS, COMPLETED, CANCELLED)</li>
+            <li>View payment status (PENDING, PARTIAL, COMPLETED)</li>
+        </ul>
+        
+        <h4>Add Payment to Sale</h4>
+        <div class="workflow">
+            <ol>
+                <li>Go to <strong>Sales</strong> → Select a sale → <strong>"View"</strong></li>
+                <li>Click <strong>"Add Payment"</strong></li>
+                <li>Fill in payment details:
+                    <ul>
+                        <li>Payment Amount *</li>
+                        <li>Payment Date *</li>
+                        <li>Transaction Mode (CASH, UPI, BANK_TRANSFER) *</li>
+                        <li>Transaction ID</li>
+                        <li>Notes</li>
+                    </ul>
+                </li>
+                <li>Click <strong>"Save"</strong></li>
+            </ol>
+        </div>
+        
+        <div class="note">
+            <strong>Note:</strong> Payment status updates automatically based on total payments vs. sale amount.
+        </div>
+        
+        <h4>Approve Commissions</h4>
+        <p>Managers can approve commissions for sales created by their team members.</p>
+        <div class="workflow">
+            <ol>
+                <li>Go to <strong>Sales</strong> → Select a sale → <strong>"View"</strong></li>
+                <li>View commission details</li>
+                <li>Click <strong>"Approve Commission"</strong> if available</li>
+                <li>Commission status changes to "APPROVED"</li>
+            </ol>
+        </div>
+        
+        <div class="warning">
+            <strong>Note:</strong> Only Cluster Heads, Zonal Heads, and Promoters can approve commissions. Area Sales Managers cannot approve commissions.
+        </div>
+        
+        <h3>Transactions</h3>
+        
+        <h4>View All Transactions</h4>
+        <ul>
+            <li>See all payment transactions</li>
+            <li>Filter by date range</li>
+            <li>View transaction details including invoice number, payment amount, transaction mode, etc.</li>
+        </ul>
+        
+        <h4>Download Invoice</h4>
+        <div class="workflow">
+            <ol>
+                <li>Go to <strong>Transactions</strong> → Select a transaction → <strong>"View"</strong></li>
+                <li>Click <strong>"Download Invoice"</strong></li>
+                <li>PDF invoice will be downloaded</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="section page-break" id="employee-management">
+        <h2>5. Employee Management</h2>
+        
+        <h3>Overview</h3>
+        <p>Managers can add, edit, and view team members based on their hierarchy level.</p>
+        
+        <h4>Hierarchy Levels:</h4>
+        <ul>
+            <li><strong>Promoter:</strong> Can manage Promoters</li>
+            <li><strong>Zonal Head:</strong> Can manage Cluster Heads and Promoters</li>
+            <li><strong>Cluster Head:</strong> Can manage Area Sales Managers and Promoters</li>
+            <li><strong>Area Sales Manager:</strong> Cannot manage other employees</li>
+        </ul>
+        
+        <h3>Add Team Member</h3>
+        <div class="workflow">
+            <ol>
+                <li>Click <strong>"Employee Management"</strong> → Select employee type</li>
+                <li>Click <strong>"Add New [Employee Type]"</strong></li>
+                <li>Fill in the form:
+                    <ul>
+                        <li>First Name *</li>
+                        <li>Last Name *</li>
+                        <li>Email * (must be unique)</li>
+                        <li>Phone * (must be unique)</li>
+                        <li>State, City, Area *</li>
+                        <li>Hierarchy Level (auto-set based on type)</li>
+                        <li>Reporting Manager (select from dropdown)</li>
+                        <li>Hire Date *</li>
+                        <li>Status (ACTIVE/INACTIVE) *</li>
+                    </ul>
+                </li>
+                <li>Click <strong>"Save"</strong></li>
+            </ol>
+        </div>
+        
+        <div class="note">
+            <strong>Note:</strong> Employee ID (username) is automatically generated. Default password is the same as Employee ID.
+        </div>
+        
+        <h3>Edit Team Member</h3>
+        <div class="workflow">
+            <ol>
+                <li>Go to <strong>Employee Management</strong> → Select employee type</li>
+                <li>Click <strong>"View"</strong> on the employee</li>
+                <li>Click <strong>"Edit"</strong></li>
+                <li>Update information (Employee ID cannot be changed)</li>
+                <li>Click <strong>"Save"</strong></li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="section page-break" id="requests-approvals">
+        <h2>6. Requests & Approvals</h2>
+        
+        <h3>Claims</h3>
+        
+        <h4>Submit a Claim</h4>
+        <div class="workflow">
+            <ol>
+                <li>Click <strong>"Claims"</strong> → <strong>"Submit New Claim"</strong></li>
+                <li>Fill in the claim form:
+                    <ul>
+                        <li>Claim Type * (TRAVEL, MEALS, ACCOMMODATION, etc.)</li>
+                        <li>Description *</li>
+                        <li>Amount *</li>
+                        <li>Claim Date *</li>
+                        <li>Bill Attachment (upload if available)</li>
+                    </ul>
+                </li>
+                <li>Click <strong>"Submit"</strong></li>
+            </ol>
+        </div>
+        
+        <div class="note">
+            <strong>Note:</strong> Claims are submitted for approval to your reporting manager.
+        </div>
+        
+        <h4>View My Claims</h4>
+        <ul>
+            <li>See all your submitted claims</li>
+            <li>View claim status (PENDING, APPROVED, REJECTED)</li>
+            <li>View claim details and remarks</li>
+        </ul>
+        
+        <h4>Pending Claim Approvals (For Managers)</h4>
+        <p>Managers can approve or reject claims submitted by their team members.</p>
+        <div class="workflow">
+            <ol>
+                <li>Click <strong>"Pending Claim Approvals"</strong></li>
+                <li>View list of pending claims</li>
+                <li>Click <strong>"View"</strong> to see claim details</li>
+                <li>Review the claim and take action:
+                    <ul>
+                        <li><strong>Approve:</strong> Claim status changes to APPROVED</li>
+                        <li><strong>Reject:</strong> Claim status changes to REJECTED (add remarks)</li>
+                    </ul>
+                </li>
+            </ol>
+        </div>
+        
+        <h3>Leave Requests</h3>
+        
+        <h4>Submit Leave Request</h4>
+        <div class="workflow">
+            <ol>
+                <li>Click <strong>"Leave Requests"</strong> → <strong>"Request Leave"</strong></li>
+                <li>Fill in the leave form:
+                    <ul>
+                        <li>Leave Type * (CASUAL, SICK, EARNED, MATERNITY, PATERNITY, UNPAID)</li>
+                        <li>Start Date *</li>
+                        <li>End Date *</li>
+                        <li>Number of Days (auto-calculated)</li>
+                        <li>Reason *</li>
+                    </ul>
+                </li>
+                <li>Click <strong>"Submit"</strong></li>
+            </ol>
+        </div>
+        
+        <h4>Cancel Leave Request</h4>
+        <div class="workflow">
+            <ol>
+                <li>Go to <strong>Leave Requests</strong> → Select a pending request → <strong>"View"</strong></li>
+                <li>Click <strong>"Cancel"</strong> if the request is still pending</li>
+                <li>Leave status changes to CANCELLED</li>
+            </ol>
+        </div>
+        
+        <h4>Pending Leave Approvals (For Managers)</h4>
+        <p>Managers can approve or reject leave requests from their team members.</p>
+        <div class="workflow">
+            <ol>
+                <li>Click <strong>"Pending Leave Approvals"</strong></li>
+                <li>View list of pending leave requests</li>
+                <li>Click <strong>"View"</strong> to see leave details</li>
+                <li>Review and approve or reject with remarks</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="section page-break" id="personal-information">
+        <h2>7. Personal Information</h2>
+        
+        <h3>Profile</h3>
+        
+        <h4>View Profile</h4>
+        <div class="workflow">
+            <ol>
+                <li>Click on your name in the top-right corner → <strong>"My Profile"</strong></li>
+                <li>View your personal and employment information</li>
+            </ol>
+        </div>
+        
+        <h4>Update Profile</h4>
+        <div class="workflow">
+            <ol>
+                <li>Go to <strong>Profile</strong></li>
+                <li>Click <strong>"Edit"</strong> or update fields directly</li>
+                <li>Update information (First Name, Last Name, Email, Phone, Department, Position, State, City, Area)</li>
+                <li>Click <strong>"Save"</strong></li>
+            </ol>
+        </div>
+        
+        <div class="note">
+            <strong>Note:</strong> Some fields like Employee ID, Hierarchy Level, and Hire Date cannot be changed.
+        </div>
+        
+        <h3>Reset Password</h3>
+        <div class="workflow">
+            <ol>
+                <li>Click on your name → <strong>"Reset Password"</strong></li>
+                <li>Enter:
+                    <ul>
+                        <li>Current Password *</li>
+                        <li>New Password * (minimum 6 characters)</li>
+                        <li>Confirm New Password *</li>
+                    </ul>
+                </li>
+                <li>Click <strong>"Reset Password"</strong></li>
+            </ol>
+        </div>
+        
+        <h3>Bank Details</h3>
+        
+        <h4>Add Bank Account</h4>
+        <div class="workflow">
+            <ol>
+                <li>Click <strong>"Bank Details"</strong> → <strong>"Add Bank Account"</strong></li>
+                <li>Fill in bank information:
+                    <ul>
+                        <li>Account Holder Name *</li>
+                        <li>Account Number *</li>
+                        <li>IFSC Code *</li>
+                        <li>Bank Name *</li>
+                        <li>Branch Name</li>
+                        <li>Account Type (SAVINGS/CURRENT)</li>
+                        <li>Mark as Primary (if this is your main account)</li>
+                    </ul>
+                </li>
+                <li>Click <strong>"Save"</strong></li>
+            </ol>
+        </div>
+        
+        <h3>Salary</h3>
+        
+        <h4>View Salary History</h4>
+        <ul>
+            <li>Click <strong>"Salary"</strong></li>
+            <li>View all your salary records with details</li>
+        </ul>
+        
+        <h4>Download Payslip</h4>
+        <div class="workflow">
+            <ol>
+                <li>Go to <strong>Salary</strong> → Select a salary record → <strong>"View"</strong></li>
+                <li>Click <strong>"Download Payslip"</strong></li>
+                <li>PDF payslip will be downloaded</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="section page-break" id="common-workflows">
+        <h2>8. Common Workflows</h2>
+        
+        <h3>Daily Workflow</h3>
+        <div class="workflow">
+            <ol>
+                <li><strong>Login</strong> to the portal</li>
+                <li><strong>Check In</strong> from the dashboard</li>
+                <li>Review <strong>Tasks</strong> assigned to you</li>
+                <li>Check <strong>Sales Target</strong> progress</li>
+                <li>Work on <strong>Sales</strong> and <strong>Customers</strong></li>
+                <li><strong>Check Out</strong> at the end of the day</li>
+            </ol>
+        </div>
+        
+        <h3>Sales Workflow</h3>
+        <div class="workflow">
+            <ol>
+                <li><strong>Add Customer</strong> (if new customer)</li>
+                <li><strong>Create Sale</strong> for the customer</li>
+                <li><strong>Add Payments</strong> as customer pays</li>
+                <li>Track payment status</li>
+                <li><strong>Commission</strong> is automatically calculated</li>
+                <li>Manager <strong>approves commission</strong> (if applicable)</li>
+            </ol>
+        </div>
+        
+        <h3>Claim Workflow</h3>
+        <div class="workflow">
+            <ol>
+                <li><strong>Submit Claim</strong> with bill attachment</li>
+                <li>Claim goes to <strong>PENDING</strong> status</li>
+                <li>Reporting manager <strong>reviews</strong> and <strong>approves/rejects</strong></li>
+                <li>If approved, admin marks as <strong>paid</strong></li>
+                <li>View payment status in claim details</li>
+            </ol>
+        </div>
+        
+        <h3>Leave Workflow</h3>
+        <div class="workflow">
+            <ol>
+                <li><strong>Submit Leave Request</strong> with dates and reason</li>
+                <li>Request goes to <strong>PENDING</strong> status</li>
+                <li>Reporting manager <strong>reviews</strong> and <strong>approves/rejects</strong></li>
+                <li>View approval status and remarks</li>
+                <li><strong>Cancel</strong> request if needed (if still pending)</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="section page-break" id="faq">
+        <h2>9. Frequently Asked Questions</h2>
+        
+        <h3>Login & Access</h3>
+        <p><strong>Q: I forgot my password. What should I do?</strong><br>
+        A: Contact your administrator to reset your password, or use the "Reset Password" option in your profile if you remember your current password.</p>
+        
+        <p><strong>Q: Can I change my Employee ID?</strong><br>
+        A: No, Employee ID is permanent and cannot be changed once created.</p>
+        
+        <p><strong>Q: What is my default password?</strong><br>
+        A: Your default password is the same as your Employee ID. You should change it after first login.</p>
+        
+        <h3>Sales & Customers</h3>
+        <p><strong>Q: How do I add a payment to a sale?</strong><br>
+        A: Go to Sales → View the sale → Click "Add Payment" → Fill in payment details → Save.</p>
+        
+        <p><strong>Q: How is commission calculated?</strong><br>
+        A: Commission is calculated based on the product's commission settings (FIXED amount or PERCENTAGE of sale amount).</p>
+        
+        <p><strong>Q: Who can approve commissions?</strong><br>
+        A: Only Cluster Heads, Zonal Heads, and Promoters can approve commissions. Area Sales Managers cannot approve commissions.</p>
+        
+        <h3>Claims & Leave</h3>
+        <p><strong>Q: How long does claim approval take?</strong><br>
+        A: Approval time depends on your reporting manager. You can check the status in "My Claims".</p>
+        
+        <p><strong>Q: Can I cancel a leave request?</strong><br>
+        A: Yes, you can cancel a leave request if it's still in PENDING status. Go to Leave Requests → View → Cancel.</p>
+        
+        <h3>Targets & Performance</h3>
+        <p><strong>Q: How do I see my sales target progress?</strong><br>
+        A: Go to "My Sales Target" from the sidebar to view your current target and progress.</p>
+        
+        <p><strong>Q: Can I set my own sales target?</strong><br>
+        A: No, sales targets are set by managers. Contact your reporting manager if you need to discuss your target.</p>
+        
+        <h3>Employee Management</h3>
+        <p><strong>Q: Who can manage employees?</strong><br>
+        A: Only managers (Promoters, Zonal Heads, Cluster Heads) can manage employees. Area Sales Managers cannot manage other employees.</p>
+        
+        <h3>Salary & Bank Details</h3>
+        <p><strong>Q: When will I receive my salary?</strong><br>
+        A: Salary is released by administrators. Check your salary list to see the status (PENDING or PAID).</p>
+        
+        <p><strong>Q: Can I have multiple bank accounts?</strong><br>
+        A: Yes, you can add multiple bank accounts. Mark one as "Primary" for salary payments.</p>
+        
+        <p><strong>Q: How do I download my payslip?</strong><br>
+        A: Go to Salary → View a salary record → Click "Download Payslip".</p>
+    </div>
+
+    <div class="section page-break">
+        <h2>Appendix</h2>
+        
+        <h3>Employee Hierarchy Levels</h3>
+        <ol>
+            <li><strong>Promoter:</strong> Entry-level sales position</li>
+            <li><strong>Area Sales Manager:</strong> Manages promoters in a specific area</li>
+            <li><strong>Cluster Head:</strong> Manages multiple Area Sales Managers</li>
+            <li><strong>Zonal Head:</strong> Manages multiple Cluster Heads</li>
+            <li><strong>Admin:</strong> System administrators (separate portal)</li>
+        </ol>
+        
+        <h3>Status Definitions</h3>
+        
+        <h4>Employee Status:</h4>
+        <ul>
+            <li><strong>ACTIVE:</strong> Employee is currently active</li>
+            <li><strong>INACTIVE:</strong> Employee is inactive (cannot login)</li>
+        </ul>
+        
+        <h4>Sale Status:</h4>
+        <ul>
+            <li><strong>IN_PROGRESS:</strong> Sale is ongoing</li>
+            <li><strong>COMPLETED:</strong> Sale is completed</li>
+            <li><strong>CANCELLED:</strong> Sale is cancelled</li>
+        </ul>
+        
+        <h4>Payment Status:</h4>
+        <ul>
+            <li><strong>PENDING:</strong> No payments received</li>
+            <li><strong>PARTIAL:</strong> Partial payment received</li>
+            <li><strong>COMPLETED:</strong> Full payment received</li>
+        </ul>
+        
+        <h4>Claim/Leave Status:</h4>
+        <ul>
+            <li><strong>PENDING:</strong> Awaiting approval</li>
+            <li><strong>APPROVED:</strong> Approved by manager</li>
+            <li><strong>REJECTED:</strong> Rejected by manager</li>
+            <li><strong>CANCELLED:</strong> Cancelled by employee</li>
+        </ul>
+        
+        <h4>Salary Status:</h4>
+        <ul>
+            <li><strong>PENDING:</strong> Salary not yet released</li>
+            <li><strong>PAID:</strong> Salary has been released</li>
+        </ul>
+    </div>
+
+    <div class="footer">
+        <p><strong>Support & Contact</strong></p>
+        <p>For technical issues, contact your IT administrator</p>
+        <p>For account issues, contact your HR or administrator</p>
+        <p><strong>Potens Green Engineering Solutions Pvt. Ltd.</strong></p>
+        <p>Version 1.0 | January 2025</p>
+        <p><em>This document is subject to updates. Please check for the latest version.</em></p>
+    </div>
+</body>
+</html>

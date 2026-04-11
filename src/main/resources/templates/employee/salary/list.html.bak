@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salary - Employee Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        <header class="top-header">
+            <div class="header-left">
+                <button class="mobile-menu-toggle" onclick="toggleMobileSidebar()" title="Toggle Sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <button class="sidebar-expand-toggle" onclick="toggleSidebar()" title="Expand/Collapse Sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <div class="company-name">Potens Green</div>
+            <form th:action="@{/logout}" method="post" style="display: inline;">
+                <button type="submit" class="logout-btn">Logout</button>
+            </form>
+        </header>
+        <div th:replace="~{fragments/employee-sidebar :: sidebar}"></div>
+        <main class="main-content">
+            <div class="container">
+        <h1 class="mb-4 mt-4">Salary History</h1>
+
+        <div class="card">
+            <div class="card-body">
+                <div th:if="${salaries != null and !salaries.isEmpty()}">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Salary Month</th>
+                                <th>Basic Salary</th>
+                                <th>Allowances</th>
+                                <th>Deductions</th>
+                                <th>Bonus</th>
+                                <th>Overtime</th>
+                                <th>Net Salary</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="salary : ${salaries}">
+                                <td th:text="${#temporals.format(salary.salaryMonth, 'MMMM yyyy')}"></td>
+                                <td th:text="${'$' + #numbers.formatDecimal(salary.basicSalary, 0, 'COMMA', 2, 'POINT')}"></td>
+                                <td th:text="${salary.allowances != null ? '$' + #numbers.formatDecimal(salary.allowances, 0, 'COMMA', 2, 'POINT') : '-'}"></td>
+                                <td th:text="${salary.deductions != null ? '$' + #numbers.formatDecimal(salary.deductions, 0, 'COMMA', 2, 'POINT') : '-'}"></td>
+                                <td th:text="${salary.bonus != null ? '$' + #numbers.formatDecimal(salary.bonus, 0, 'COMMA', 2, 'POINT') : '-'}"></td>
+                                <td th:text="${salary.overtime != null ? '$' + #numbers.formatDecimal(salary.overtime, 0, 'COMMA', 2, 'POINT') : '-'}"></td>
+                                <td><strong th:text="${'$' + #numbers.formatDecimal(salary.netSalary, 0, 'COMMA', 2, 'POINT')}"></strong></td>
+                                <td>
+                                    <span class="badge" 
+                                          th:classappend="${salary.status == 'PAID'} ? 'badge-success' : 
+                                                          (${salary.status == 'PROCESSED'} ? 'badge-info' : 'badge-warning')"
+                                          th:text="${salary.status}">PENDING</span>
+                                </td>
+                                <td>
+                                    <a th:href="@{/employee/salary/view/{id}(id=${salary.id})}" class="btn btn-sm btn-info">View</a>
+                                    <a th:if="${salary.payslipPath != null and !salary.payslipPath.isEmpty()}" 
+                                       th:href="@{/employee/salary/download/{id}(id=${salary.id})}" 
+                                       class="btn btn-sm btn-primary">Download Payslip</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div th:if="${salaries == null or salaries.isEmpty()}" class="text-center py-4">
+                    <p>No salary records found.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        </div>
+            </div>
+        </main>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/sidebar.js}"></script>
+</body>
+</html>

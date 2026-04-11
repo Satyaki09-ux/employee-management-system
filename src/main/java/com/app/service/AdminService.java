@@ -89,4 +89,32 @@ public class AdminService {
         Admin admin = adminRepository.findByUsername(username);
         return Optional.ofNullable(admin);
     }
+    
+    /**
+     * Check if admin has a specific permission
+     */
+    public boolean hasPermission(Admin admin, String permission) {
+        if (admin == null) {
+            return false;
+        }
+        
+        // SUPER_ADMIN has all permissions
+        if ("SUPER_ADMIN".equals(admin.getRole())) {
+            return true;
+        }
+        
+        // Check permissions string
+        String permissions = admin.getPermissions();
+        if (permissions == null || permissions.isEmpty()) {
+            return false;
+        }
+        
+        String[] perms = permissions.split(",");
+        for (String perm : perms) {
+            if (perm.trim().equals(permission)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

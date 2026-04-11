@@ -10,20 +10,7 @@
 </head>
 <body>
     <div class="dashboard-wrapper">
-        <header class="top-header">
-            <div class="header-left">
-                <button class="mobile-menu-toggle" onclick="toggleMobileSidebar()" title="Toggle Sidebar">
-                    <i class="fas fa-bars"></i>
-                </button>
-                <button class="sidebar-expand-toggle" onclick="toggleSidebar()" title="Expand/Collapse Sidebar">
-                    <i class="fas fa-bars"></i>
-                </button>
-            </div>
-            <div class="company-name">Potens Green</div>
-            <form th:action="@{/logout}" method="post" style="display: inline;">
-                <button type="submit" class="logout-btn">Logout</button>
-            </form>
-        </header>
+        <div th:replace="~{fragments/admin-header :: header}"></div>
 
         <div th:replace="~{fragments/admin-sidebar :: sidebar}"></div>
 
@@ -140,9 +127,24 @@
                     <div class="row">
                         <div class="col-md-12">
                             <div class="form-group">
-                                <label class="form-label">Permissions</label>
-                                <textarea class="form-control" th:field="*{permissions}" rows="3" placeholder="Comma-separated permissions or JSON"></textarea>
-                                <small class="form-text text-muted">Optional: Specify permissions for this admin (e.g., "EMPLOYEE_MANAGEMENT,CUSTOMER_MANAGEMENT" or JSON format)</small>
+                                <label class="form-label">Menu Permissions</label>
+                                <small class="form-text text-muted d-block mb-3">Select the menu items this admin can access:</small>
+                                <div class="row">
+                                    <div th:each="permission : ${allPermissions}" class="col-md-4 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" 
+                                                   type="checkbox" 
+                                                   name="permissions" 
+                                                   th:value="${permission}"
+                                                   th:id="'perm_' + ${permission}"
+                                                   th:checked="${selectedPermissions != null and selectedPermissions.contains(permission)}">
+                                            <label class="form-check-label" th:for="'perm_' + ${permission}">
+                                                <span th:text="${permissionLabels.get(permission)}">Permission</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <small class="form-text text-muted mt-2 d-block">Note: SUPER_ADMIN role has access to all menus regardless of permissions.</small>
                             </div>
                         </div>
                     </div>

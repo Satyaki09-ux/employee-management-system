@@ -10,20 +10,7 @@
 </head>
 <body>
     <div class="dashboard-wrapper">
-        <header class="top-header">
-            <div class="header-left">
-                <button class="mobile-menu-toggle" onclick="toggleMobileSidebar()" title="Toggle Sidebar">
-                    <i class="fas fa-bars"></i>
-                </button>
-                <button class="sidebar-expand-toggle" onclick="toggleSidebar()" title="Expand/Collapse Sidebar">
-                    <i class="fas fa-bars"></i>
-                </button>
-            </div>
-            <div class="company-name">Potens Green</div>
-            <form th:action="@{/logout}" method="post" style="display: inline;">
-                <button type="submit" class="logout-btn">Logout</button>
-            </form>
-        </header>
+        <div th:replace="~{fragments/admin-header :: header}"></div>
 
         <div th:replace="~{fragments/admin-sidebar :: sidebar}"></div>
 
@@ -72,11 +59,14 @@
                     </div>
 
                     <div class="alert alert-info" th:if="${employee.id == null}">
-                        <strong>Note:</strong> Employee ID (username) will be automatically generated starting with "PG" followed by 6 alphanumeric characters. The default password will be the same as the Employee ID.
+                        <strong>Note:</strong> Employee ID (username) will be automatically generated starting with "PGES" followed by 6 alphanumeric characters. The default password will be the same as the Employee ID.
                     </div>
                     <div class="alert alert-info" th:if="${employee.id != null}">
-                        <strong>Employee ID:</strong> <span th:text="${employee.username}">-</span>
+                        <strong>Employee ID:</strong> <span th:text="${employee.username != null and !employee.username.isEmpty() ? employee.username : 'N/A'}">N/A</span>
+                        <small class="d-block text-muted mt-1">Employee ID cannot be changed once created.</small>
                     </div>
+                    <!-- Hidden field to preserve username during form submission -->
+                    <input type="hidden" th:field="*{username}" th:if="${employee.id != null}">
 
                     <div class="row">
                         <div class="col-md-4">
@@ -146,7 +136,12 @@
                         <div class="col-md-6">
                             <div class="form-group mb-3">
                                 <label class="form-label">Hire Date *</label>
-                                <input type="date" class="form-control" th:field="*{hireDate}" required>
+                                <input type="date" 
+                                       class="form-control" 
+                                       name="hireDate"
+                                       id="hireDate"
+                                       th:value="${employee.hireDate != null ? #temporals.format(employee.hireDate, 'yyyy-MM-dd') : ''}"
+                                       required>
                                 <span class="text-danger" th:if="${#fields.hasErrors('hireDate')}" th:errors="*{hireDate}"></span>
                             </div>
                         </div>

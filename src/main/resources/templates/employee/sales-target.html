@@ -10,20 +10,7 @@
 </head>
 <body>
     <div class="dashboard-wrapper">
-        <header class="top-header">
-            <div class="header-left">
-                <button class="mobile-menu-toggle" onclick="toggleMobileSidebar()" title="Toggle Sidebar">
-                    <i class="fas fa-bars"></i>
-                </button>
-                <button class="sidebar-expand-toggle" onclick="toggleSidebar()" title="Expand/Collapse Sidebar">
-                    <i class="fas fa-bars"></i>
-                </button>
-            </div>
-            <div class="company-name">Potens Green</div>
-            <form th:action="@{/logout}" method="post" style="display: inline;">
-                <button type="submit" class="logout-btn">Logout</button>
-            </form>
-        </header>
+                <div th:replace="~{fragments/employee-header :: header}"></div>
         <div th:replace="~{fragments/employee-sidebar :: sidebar}"></div>
         <main class="main-content">
             <div class="container">
@@ -32,13 +19,43 @@
             <a th:href="@{/employee/dashboard}" class="btn btn-secondary">Back to Dashboard</a>
         </div>
 
-        <div th:if="${employee.hierarchyLevel == 'AREA_SALES_MANAGER' and totalCommission != null}" class="card mb-4">
+        <!-- Commission Information Section -->
+        <div class="card mb-4">
             <div class="card-header bg-info text-white">
-                <i class="fas fa-money-bill-wave"></i> Accumulated Commission
+                <i class="fas fa-money-bill-wave"></i> Commission Information
             </div>
             <div class="card-body">
-                <h3 class="text-success">₹<span th:text="${#numbers.formatDecimal(totalCommission, 0, 'COMMA', 2, 'POINT')}">0.00</span></h3>
-                <p class="text-muted">Total commission earned from all sales</p>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card bg-warning text-white mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-clock"></i> Pending for Approval</h5>
+                                <h3 class="mb-0">₹<span th:text="${#numbers.formatDecimal(totalPendingCommission != null ? totalPendingCommission : 0, 0, 'COMMA', 2, 'POINT')}">0.00</span></h3>
+                                <p class="mb-0 small">Total commission awaiting approval</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card bg-success text-white mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-check-circle"></i> Approved</h5>
+                                <h3 class="mb-0">₹<span th:text="${#numbers.formatDecimal(totalApprovedCommission != null ? totalApprovedCommission : 0, 0, 'COMMA', 2, 'POINT')}">0.00</span></h3>
+                                <p class="mb-0 small">Total commission approved and credited</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-12">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-calculator"></i> Total Commission</h5>
+                                <h3 class="mb-0">₹<span th:text="${#numbers.formatDecimal((totalPendingCommission != null ? totalPendingCommission : 0).add(totalApprovedCommission != null ? totalApprovedCommission : 0), 0, 'COMMA', 2, 'POINT')}">0.00</span></h3>
+                                <p class="mb-0 small">Combined total of pending and approved commissions</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 

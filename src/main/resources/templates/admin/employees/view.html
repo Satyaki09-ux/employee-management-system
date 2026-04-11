@@ -10,20 +10,7 @@
 </head>
 <body>
     <div class="dashboard-wrapper">
-        <header class="top-header">
-            <div class="header-left">
-                <button class="mobile-menu-toggle" onclick="toggleMobileSidebar()" title="Toggle Sidebar">
-                    <i class="fas fa-bars"></i>
-                </button>
-                <button class="sidebar-expand-toggle" onclick="toggleSidebar()" title="Expand/Collapse Sidebar">
-                    <i class="fas fa-bars"></i>
-                </button>
-            </div>
-            <div class="company-name">Potens Green</div>
-            <form th:action="@{/logout}" method="post" style="display: inline;">
-                <button type="submit" class="logout-btn">Logout</button>
-            </form>
-        </header>
+        <div th:replace="~{fragments/admin-header :: header}"></div>
 
         <div th:replace="~{fragments/admin-sidebar :: sidebar}"></div>
 
@@ -32,7 +19,12 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1 th:text="${employeeTypeLabel + ' Details'}">Employee Details</h1>
             <div>
-                <a th:href="${baseUrl + '/edit/' + employee.id}" class="btn btn-warning">Edit</a>
+                <a th:href="${baseUrl + '/edit/' + employee.id}" class="btn btn-warning">
+                    <i class="fas fa-edit"></i> Edit
+                </a>
+                <a th:href="${baseUrl + '/reset-password/' + employee.id}" class="btn btn-info">
+                    <i class="fas fa-key"></i> Reset Password
+                </a>
                 <a th:href="${listUrl}" class="btn btn-secondary">Back to List</a>
             </div>
         </div>

@@ -50,4 +50,13 @@ public class EmployeePortalControllerAdvice {
         }
         return labels;
     }
+    
+    @ModelAttribute("employeeHierarchyLabel")
+    public String employeeHierarchyLabel() {
+        Employee emp = currentEmployee();
+        if (emp == null || emp.getHierarchyLevel() == null) {
+            return "";
+        }
+        return employeeService.formatHierarchyLevel(emp.getHierarchyLevel());
+    }
 }

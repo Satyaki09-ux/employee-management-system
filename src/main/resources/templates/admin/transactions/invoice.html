@@ -47,6 +47,7 @@
                 </div>
                 <div class="col-md-6 text-end">
                     <h3>Invoice #<span th:text="${transaction.invoiceNumber != null ? transaction.invoiceNumber : 'N/A'}">INV-000001</span></h3>
+                    <p class="mb-0" th:if="${transaction.sale != null and transaction.sale.saleId != null}">Sale ID: <span th:text="${transaction.sale.saleId}">PGESXXXXXX</span></p>
                     <p class="mb-0">Date: <span th:text="${#temporals.format(transaction.paymentDate, 'dd MMM yyyy')}">23 Jan 2026</span></p>
                 </div>
             </div>
@@ -64,10 +65,10 @@
             </div>
             <div class="col-md-6">
                 <h5>Sold By:</h5>
-                <p th:if="${transaction.sale != null and transaction.sale.employee != null}">
-                    <strong th:text="${transaction.sale.employee.name}">Employee Name</strong><br>
-                    <span th:if="${transaction.sale.employee.email != null}" th:text="${transaction.sale.employee.email}">employee@example.com</span><br>
-                    <span th:if="${transaction.sale.employee.phone != null}" th:text="${transaction.sale.employee.phone}">+91 1234567890</span>
+                <p th:if="${createdByEmployee != null}">
+                    <strong th:text="${createdByEmployee.fullName}">Employee Name</strong><br>
+                    <span th:if="${createdByEmployee.email != null}" th:text="${createdByEmployee.email}">employee@example.com</span><br>
+                    <span th:if="${createdByEmployee.phone != null}" th:text="${createdByEmployee.phone}">+91 1234567890</span>
                 </p>
             </div>
         </div>
@@ -83,7 +84,11 @@
             </thead>
             <tbody>
                 <tr th:if="${transaction.sale != null}">
-                    <td th:text="${transaction.sale.productName != null ? transaction.sale.productName : (transaction.sale.product != null ? transaction.sale.product.name : 'Product')}">Product Name</td>
+                    <td>
+                        <span th:if="${transaction.sale.productName != null}" th:text="${transaction.sale.productName}">Product Name</span>
+                        <span th:unless="${transaction.sale.productName != null}" th:if="${transaction.sale.product != null}" th:text="${transaction.sale.product.name}">Product</span>
+                        <span th:unless="${transaction.sale.productName != null and transaction.sale.product != null}">Product</span>
+                    </td>
                     <td th:text="${transaction.sale.quantity}">1</td>
                     <td>₹<span th:text="${#numbers.formatDecimal(transaction.sale.unitPrice, 0, 'COMMA', 2, 'POINT')}">0.00</span></td>
                     <td>₹<span th:text="${#numbers.formatDecimal(transaction.sale.totalAmount, 0, 'COMMA', 2, 'POINT')}">0.00</span></td>
@@ -116,6 +121,22 @@
                     <tr th:if="${transaction.transactionId != null}">
                         <th>Transaction ID:</th>
                         <td class="text-end" th:text="${transaction.transactionId}">-</td>
+                    </tr>
+                    <tr>
+                        <th>Settlement Status:</th>
+                        <td class="text-end">
+                            <span class="badge"
+                                  th:classappend="${transaction.settled == true} ? 'badge-success' : 'badge-warning'"
+                                  th:text="${transaction.settled == true ? 'Settled' : 'Not Settled'}">Not Settled</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Approval Status:</th>
+                        <td class="text-end">
+                            <span class="badge"
+                                  th:classappend="${transaction.settled != null and transaction.settled} ? 'badge-success' : 'badge-secondary'"
+                                  th:text="${transaction.settled != null and transaction.settled ? 'Approved' : 'Not Settled'}">Not Settled</span>
+                        </td>
                     </tr>
                 </table>
             </div>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Claim - Employee Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        <header class="top-header">
+            <div class="header-left">
+                <button class="mobile-menu-toggle" onclick="toggleMobileSidebar()" title="Toggle Sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <button class="sidebar-expand-toggle" onclick="toggleSidebar()" title="Expand/Collapse Sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <div class="company-name">Potens Green</div>
+            <form th:action="@{/logout}" method="post" style="display: inline;">
+                <button type="submit" class="logout-btn">Logout</button>
+            </form>
+        </header>
+        <div th:replace="~{fragments/employee-sidebar :: sidebar}"></div>
+        <main class="main-content">
+            <div class="container">
+        <div th:if="${error}" class="alert alert-danger mt-4" role="alert">
+            <span th:text="${error}"></span>
+        </div>
+
+        <h1 class="mb-4 mt-4">Submit New Claim</h1>
+
+        <div class="card">
+            <div class="card-body">
+                <form th:action="@{/employee/claims/save}" th:object="${claim}" method="post">
+                    <input type="hidden" th:field="*{id}">
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Claim Type *</label>
+                            <select class="form-select" th:field="*{claimType}" required>
+                                <option value="">Select Claim Type</option>
+                                <option value="TRAVEL">Travel</option>
+                                <option value="MEAL">Meal</option>
+                                <option value="ACCOMMODATION">Accommodation</option>
+                                <option value="MEDICAL">Medical</option>
+                                <option value="OTHER">Other</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Claim Date *</label>
+                            <input type="date" class="form-control" th:field="*{claimDate}" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Amount *</label>
+                        <input type="number" step="0.01" class="form-control" th:field="*{amount}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Description *</label>
+                        <textarea class="form-control" rows="4" th:field="*{description}" required></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Bill Attachment (File Path/URL)</label>
+                        <input type="text" class="form-control" th:field="*{billAttachment}" placeholder="Enter file path or URL">
+                        <small class="form-text text-muted">Note: File upload functionality can be added later</small>
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">Submit Claim</button>
+                        <a th:href="@{/employee/claims}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+            </div>
+        </main>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/sidebar.js}"></script>
+</body>
+</html>

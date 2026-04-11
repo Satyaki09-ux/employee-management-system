@@ -21,5 +21,10 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
     @Query("SELECT e FROM Employee e WHERE e.hierarchyLevel = :level AND (LOWER(e.firstName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(e.lastName) LIKE LOWER(CONCAT('%', :keyword, '%')))")
     List<Employee> findByHierarchyLevelAndNameContaining(@Param("level") String hierarchyLevel, @Param("keyword") String keyword);
+
+    @Query("SELECT e FROM Employee e WHERE e.reportingManager.id = :managerId AND e.status = 'ACTIVE'")
+    List<Employee> findDirectReportsByManagerId(@Param("managerId") Long managerId);
+
+    List<Employee> findByReportingManager_Id(Long managerId);
 }
 

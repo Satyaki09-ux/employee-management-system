@@ -97,7 +97,57 @@ public class EmployeeCustomerController {
             employeeService.getEmployeeById(customer.getAreaSalesManagerId())
                     .ifPresent(emp -> model.addAttribute("areaSalesManager", emp));
         }
+
+        // Check if current employee has direct reports (is a manager)
+        List<Employee> directReports = employeeService.getDirectReports(currentEmployee);
+        if (!directReports.isEmpty()) {
+            model.addAttribute("directReports", directReports);
+            model.addAttribute("isManager", true);
+        } else {
+            model.addAttribute("isManager", false);
+        }
+
         return "employee/customers/view";
+    }
+
+    @PostMapping("/assign/{customerId}")
+    public String assignCustomer(@PathVariable Long customerId,
+                                @RequestParam Long employeeId,
+                                RedirectAttributes redirectAttributes) {
+        try {
+            Employee currentEmployee = getCurrentEmployee();
+
+            // Verify the customer exists and is accessible
+            Customer customer = customerService.getCustomerById(customerId)
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid customer ID: " + customerId));
+
+            List<Customer> accessibleCustomers = customerService.getCustomersForEmployee(currentEmployee);
+            if (!accessibleCustomers.contains(customer)) {
+                redirectAttributes.addFlashAttribute("error", "You do not have access to this customer");
+                return "redirect:/employee/customers/view/" + customerId;
+            }
+
+            // Verify the target employee is a direct report
+            Employee targetEmployee = employeeService.getEmployeeById(employeeId)
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid employee ID: " + employeeId));
+
+            List<Employee> directReports = employeeService.getDirectReports(currentEmployee);
+            if (!directReports.contains(targetEmployee)) {
+                redirectAttributes.addFlashAttribute("error", "You can only assign customers to your direct reports");
+                return "redirect:/employee/customers/view/" + customerId;
+            }
+
+            // Assign the customer to the target employee using the hierarchy assignment logic
+            customerService.assignCustomerToEmployee(customer, targetEmployee, currentEmployee);
+
+            redirectAttributes.addFlashAttribute("message",
+                "Customer successfully assigned to " + targetEmployee.getFullName());
+
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error assigning customer: " + e.getMessage());
+        }
+
+        return "redirect:/employee/customers/view/" + customerId;
     }
 
     @GetMapping("/edit/{id}")

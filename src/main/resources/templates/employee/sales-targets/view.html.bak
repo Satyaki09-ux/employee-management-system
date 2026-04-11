@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Sales Targets - Employee Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        <header class="top-header">
+            <div class="header-left">
+                <button class="mobile-menu-toggle" onclick="toggleMobileSidebar()" title="Toggle Sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <button class="sidebar-expand-toggle" onclick="toggleSidebar()" title="Expand/Collapse Sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <div class="company-name">Potens Green</div>
+            <form th:action="@{/logout}" method="post" style="display: inline;">
+                <button type="submit" class="logout-btn">Logout</button>
+            </form>
+        </header>
+        <div th:replace="~{fragments/employee-sidebar :: sidebar}"></div>
+        <main class="main-content">
+            <div class="container">
+        <div th:if="${message}" class="alert alert-success">
+            <span th:text="${message}"></span>
+        </div>
+        <div th:if="${error}" class="alert alert-danger">
+            <span th:text="${error}"></span>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-bullseye"></i> Sales Targets for <span th:text="${targetEmployee.fullName}">Employee</span></h1>
+            <div>
+                <a th:href="@{/employee/sales-targets/set/{id}(id=${targetEmployee.id})}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Set New Target
+                </a>
+                <a th:href="@{/employee/sales-targets}" class="btn btn-secondary">Back to List</a>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">Employee Information</div>
+            <div class="card-body">
+                <table class="table">
+                    <tr>
+                        <th>Employee ID:</th>
+                        <td><strong th:text="${targetEmployee.username != null ? targetEmployee.username : 'N/A'}">N/A</strong></td>
+                    </tr>
+                    <tr>
+                        <th>Name:</th>
+                        <td th:text="${targetEmployee.fullName}">Name</td>
+                    </tr>
+                    <tr>
+                        <th>Hierarchy Level:</th>
+                        <td><span class="badge badge-info" th:text="${targetEmployee.hierarchyLevel}">Level</span></td>
+                    </tr>
+                    <tr>
+                        <th>Email:</th>
+                        <td th:text="${targetEmployee.email}">Email</td>
+                    </tr>
+                    <tr>
+                        <th>Phone:</th>
+                        <td th:text="${targetEmployee.phone}">Phone</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">Sales Targets</div>
+            <div class="card-body">
+                <table class="table" th:if="${targets != null and !targets.isEmpty()}">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Period Start</th>
+                            <th>Period End</th>
+                            <th>Target Units</th>
+                            <th>Target Amount</th>
+                            <th>Achieved Amount</th>
+                            <th>Remaining</th>
+                            <th>Progress</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="target : ${targets}">
+                            <td>
+                                <strong th:text="${target.product != null ? target.product.name + ' (' + target.product.productId + ')' : 'General'}">Product</strong>
+                            </td>
+                            <td th:text="${#temporals.format(target.periodStart, 'yyyy-MM-dd')}">Start</td>
+                            <td th:text="${#temporals.format(target.periodEnd, 'yyyy-MM-dd')}">End</td>
+                            <td><strong th:text="${target.targetUnits != null ? target.targetUnits : '-'}">-</strong> units</td>
+                            <td><strong>₹<span th:text="${#numbers.formatDecimal(target.targetAmount, 0, 'COMMA', 2, 'POINT')}">0.00</span></strong></td>
+                            <td class="text-success">₹<span th:text="${#numbers.formatDecimal(target.achievedAmount, 0, 'COMMA', 2, 'POINT')}">0.00</span></td>
+                            <td class="text-danger">₹<span th:text="${#numbers.formatDecimal(target.targetAmount.subtract(target.achievedAmount), 0, 'COMMA', 2, 'POINT')}">0.00</span></td>
+                            <td>
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar" role="progressbar" 
+                                         th:classappend="${target.progressPercentage.intValue() >= 100} ? 'bg-success' : 'bg-warning'"
+                                         th:style="${'width: ' + (target.progressPercentage.intValue() > 100 ? 100 : target.progressPercentage.intValue()) + '%'}"
+                                         th:attr="aria-valuenow=${target.progressPercentage.intValue()}"
+                                         aria-valuemin="0" aria-valuemax="100">
+                                        <small th:text="${target.progressPercentage.intValue() + '%'}">0%</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge" 
+                                      th:classappend="${target.progressPercentage.intValue() >= 100} ? 'badge-success' : 'badge-warning'"
+                                      th:text="${target.progressPercentage.intValue() >= 100 ? 'Achieved' : 'In Progress'}">In Progress</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="empty-state" th:if="${targets == null or targets.isEmpty()}">
+                    <p>No sales targets set for this employee yet.</p>
+                    <a th:href="@{/employee/sales-targets/set/{id}(id=${targetEmployee.id})}" class="btn btn-primary mt-3">
+                        <i class="fas fa-plus"></i> Set First Target
+                    </a>
+                </div>
+            </div>
+        </div>
+            </div>
+        </main>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/sidebar.js}"></script>
+</body>
+</html>

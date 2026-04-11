@@ -180,4 +180,26 @@ public class Admin {
     public String getFullName() {
         return firstName + " " + lastName;
     }
+    
+    /**
+     * Check if admin has a specific permission
+     */
+    public boolean hasPermission(String permission) {
+        // SUPER_ADMIN has all permissions
+        if ("SUPER_ADMIN".equals(this.role)) {
+            return true;
+        }
+        
+        if (permissions == null || permissions.isEmpty()) {
+            return false;
+        }
+        
+        String[] perms = permissions.split(",");
+        for (String perm : perms) {
+            if (perm.trim().equals(permission)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

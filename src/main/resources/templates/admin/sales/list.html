@@ -10,20 +10,7 @@
 </head>
 <body>
     <div class="dashboard-wrapper">
-        <header class="top-header">
-            <div class="header-left">
-                <button class="mobile-menu-toggle" onclick="toggleMobileSidebar()" title="Toggle Sidebar">
-                    <i class="fas fa-bars"></i>
-                </button>
-                <button class="sidebar-expand-toggle" onclick="toggleSidebar()" title="Expand/Collapse Sidebar">
-                    <i class="fas fa-bars"></i>
-                </button>
-            </div>
-            <div class="company-name">Potens Green</div>
-            <form th:action="@{/logout}" method="post" style="display: inline;">
-                <button type="submit" class="logout-btn">Logout</button>
-            </form>
-        </header>
+        <div th:replace="~{fragments/admin-header :: header}"></div>
         <div th:replace="~{fragments/admin-sidebar :: sidebar}"></div>
         <main class="main-content">
             <div class="container">
@@ -80,7 +67,7 @@
                 <table class="table" th:if="${sales != null and !sales.isEmpty()}">
                     <thead>
                         <tr>
-                            <th>ID</th>
+                            <th>Sale ID</th>
                             <th>Date</th>
                             <th>Customer</th>
                             <th>Product</th>
@@ -89,33 +76,30 @@
                             <th>Unit Price</th>
                             <th>Total Amount</th>
                             <th>Status</th>
-                            <th>Actions</th>
+                            <th>View</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr th:each="sale : ${sales}">
-                            <td th:text="${sale.id}"></td>
+                            <td th:text="${sale.saleId != null ? sale.saleId : '-'}"></td>
                             <td th:text="${#temporals.format(sale.saleDate, 'yyyy-MM-dd')}"></td>
                             <td th:text="${sale.customer.contactPerson}"></td>
                             <td th:text="${sale.productName}"></td>
-                            <td th:text="${sale.employee.fullName}"></td>
+                            <td th:text="${sale.createdByEmployee != null ? sale.createdByEmployee.fullName : 'Unknown'}"></td>
                             <td th:text="${sale.quantity}"></td>
                             <td th:text="${'$' + #numbers.formatDecimal(sale.unitPrice, 0, 'COMMA', 2, 'POINT')}"></td>
                             <td th:text="${'$' + #numbers.formatDecimal(sale.totalAmount, 0, 'COMMA', 2, 'POINT')}"></td>
                             <td>
                                 <span class="badge" 
-                                      th:classappend="${sale.status == 'COMPLETED'} ? 'badge-success' : 
-                                                      (${sale.status == 'PENDING'} ? 'badge-warning' : 'badge-danger')"
-                                      th:text="${sale.status}">PENDING</span>
+                                      th:classappend="${sale.paymentStatus == 'COMPLETED'} ? 'badge-success' :
+                                                      (${sale.paymentStatus == 'PARTIAL'} ? 'badge-warning' :
+                                                      (${sale.paymentStatus == 'PENDING'} ? 'badge-info' : 'badge-danger'))"
+                                      th:text="${sale.paymentStatus}">PENDING</span>
                             </td>
                             <td>
-                                <div class="action-buttons">
-                                    <a th:href="@{/sales/view/{id}(id=${sale.id})}" class="btn btn-info btn-sm">View</a>
-                                    <a th:href="@{/sales/edit/{id}(id=${sale.id})}" class="btn btn-warning btn-sm">Edit</a>
-                                    <a th:href="@{/sales/delete/{id}(id=${sale.id})}" 
-                                       class="btn btn-danger btn-sm"
-                                       onclick="return confirm('Are you sure?')">Delete</a>
-                                </div>
+                                <a th:href="@{/admin/sales/view/{id}(id=${sale.id})}" class="btn btn-info btn-sm">
+                                    <i class="fas fa-eye"></i> View Details
+                                </a>
                             </td>
                         </tr>
                     </tbody>

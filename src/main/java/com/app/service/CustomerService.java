@@ -204,5 +204,41 @@ public class CustomerService {
         
         return List.of();
     }
+
+    /**
+     * Assigns a customer to an employee and updates the hierarchy fields
+     */
+    public void assignCustomerToEmployee(Customer customer, Employee targetEmployee, Employee assigner) {
+        if (customer == null || targetEmployee == null) {
+            throw new IllegalArgumentException("Customer and target employee cannot be null");
+        }
+
+        // Update customer hierarchy based on target employee's position
+        String hierarchyLevel = targetEmployee.getHierarchyLevel();
+
+        if ("PROMOTER".equals(hierarchyLevel)) {
+            customer.setPromoterId(targetEmployee.getId());
+            customer.setZonalHeadId(null);
+            customer.setClusterHeadId(null);
+            customer.setAreaSalesManagerId(null);
+        } else if ("ZONAL_HEAD".equals(hierarchyLevel)) {
+            customer.setZonalHeadId(targetEmployee.getId());
+            customer.setClusterHeadId(null);
+            customer.setAreaSalesManagerId(null);
+            // Keep promoter if it exists
+        } else if ("CLUSTER_HEAD".equals(hierarchyLevel)) {
+            customer.setClusterHeadId(targetEmployee.getId());
+            customer.setAreaSalesManagerId(null);
+            // Keep higher level assignments
+        } else if ("AREA_SALES_MANAGER".equals(hierarchyLevel)) {
+            customer.setAreaSalesManagerId(targetEmployee.getId());
+            // Keep higher level assignments
+        }
+
+        // Update audit fields
+        customer.setLastUpdatedBy(assigner.getFullName());
+
+        customerRepository.save(customer);
+    }
 }
 

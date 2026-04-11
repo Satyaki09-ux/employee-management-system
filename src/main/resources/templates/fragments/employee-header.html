@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:fragment="header">
+    <header class="top-header">
+        <div class="header-left">
+            <button class="mobile-menu-toggle" onclick="toggleMobileSidebar()" title="Toggle Sidebar">
+                <i class="fas fa-bars"></i>
+            </button>
+            <button class="sidebar-expand-toggle" onclick="toggleSidebar()" title="Expand/Collapse Sidebar">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+        <div class="company-name">Potens Green</div>
+        <div class="header-right">
+            <div class="dropdown">
+                    <button class="btn btn-link profile-dropdown-toggle" type="button" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-user-circle"></i>
+                    <span class="profile-name" th:text="${currentEmployee != null ? currentEmployee.fullName : (employee != null ? employee.fullName : 'Employee')}">Employee</span>
+                    <i class="fas fa-chevron-down ms-1"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                    <li class="dropdown-header">
+                        <div class="fw-bold" th:text="${currentEmployee != null ? currentEmployee.fullName : (employee != null ? employee.fullName : 'Employee')}">Employee Name</div>
+                        <small class="text-muted" th:text="${employeeHierarchyLabel != null and !employeeHierarchyLabel.isEmpty() ? employeeHierarchyLabel : (currentEmployee != null and currentEmployee.hierarchyLevel != null ? currentEmployee.hierarchyLevel : (employee != null and employee.hierarchyLevel != null ? employee.hierarchyLevel : ''))}">Designation</small>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item" th:href="@{/employee/profile}">
+                            <i class="fas fa-user"></i> My Profile
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" th:href="@{/employee/reset-password}">
+                            <i class="fas fa-key"></i> Reset Password
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" th:href="@{/employee/guide}" target="_blank">
+                            <i class="fas fa-book"></i> User Guide
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <form th:action="@{/logout}" method="post" style="display: inline;">
+                            <button type="submit" class="dropdown-item text-danger">
+                                <i class="fas fa-sign-out-alt"></i> Logout
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </header>
+    <style>
+        .profile-dropdown-toggle {
+            color: #333;
+            text-decoration: none;
+            border: none;
+            background: white;
+            padding: 0.5rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .profile-dropdown-toggle:hover,
+        .profile-dropdown-toggle:focus,
+        .profile-dropdown-toggle:active {
+            color: #333;
+            background: white;
+        }
+        
+        .profile-name {
+            font-weight: 500;
+        }
+        
+        .dropdown-menu {
+            min-width: 200px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background: white;
+        }
+        
+        .dropdown-header {
+            padding: 0.75rem 1rem;
+            background: white;
+        }
+        
+        .dropdown-item {
+            padding: 0.5rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: white;
+            color: #333;
+        }
+        
+        .dropdown-item:hover,
+        .dropdown-item:focus,
+        .dropdown-item:active {
+            background: white !important;
+            color: #333 !important;
+        }
+        
+        .dropdown-item i {
+            width: 20px;
+            text-align: center;
+        }
+        
+        .dropdown-item.text-danger {
+            color: #dc3545 !important;
+            background: white;
+        }
+        
+        .dropdown-item.text-danger:hover,
+        .dropdown-item.text-danger:focus,
+        .dropdown-item.text-danger:active {
+            background: white !important;
+            color: #dc3545 !important;
+        }
+    </style>
+</html>

@@ -207,4 +207,60 @@ public class EmployeeController {
         ra.addFlashAttribute("message", labelFor(type) + " saved successfully!");
         return "redirect:/admin/employees/" + type;
     }
+
+    /**
+     * Show reset password form for an employee
+     */
+    @GetMapping("/{type}/reset-password/{id}")
+    public String showResetPasswordForm(@PathVariable String type, @PathVariable Long id, Model model) {
+        hierarchyFor(type);
+        Employee employee = employeeService.getEmployeeById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid employee ID: " + id));
+        model.addAttribute("employee", employee);
+        addTypeAttributes(model, type);
+        return "admin/employees/reset-password";
+    }
+
+    /**
+     * Reset password for an employee
+     */
+    @PostMapping("/{type}/reset-password/{id}")
+    public String resetPassword(@PathVariable String type,
+                               @PathVariable Long id,
+                               @RequestParam String newPassword,
+                               @RequestParam String confirmPassword,
+                               Model model,
+                               RedirectAttributes redirectAttributes) {
+        hierarchyFor(type);
+        
+        // Validate passwords match
+        if (newPassword == null || newPassword.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "New password cannot be empty");
+            return "redirect:/admin/employees/" + type + "/reset-password/" + id;
+        }
+        
+        if (!newPassword.equals(confirmPassword)) {
+            redirectAttributes.addFlashAttribute("error", "Passwords do not match");
+            return "redirect:/admin/employees/" + type + "/reset-password/" + id;
+        }
+        
+        // Validate password length (minimum 6 characters)
+        if (newPassword.length() < 6) {
+            redirectAttributes.addFlashAttribute("error", "Password must be at least 6 characters long");
+            return "redirect:/admin/employees/" + type + "/reset-password/" + id;
+        }
+        
+        try {
+            Employee employee = employeeService.getEmployeeById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid employee ID: " + id));
+            
+            employeeService.resetPassword(id, newPassword);
+            redirectAttributes.addFlashAttribute("message", 
+                "Password has been reset successfully for " + employee.getFullName() + " (ID: " + employee.getUsername() + ")");
+            return "redirect:/admin/employees/" + type + "/view/" + id;
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error resetting password: " + e.getMessage());
+            return "redirect:/admin/employees/" + type + "/reset-password/" + id;
+        }
+    }
 }

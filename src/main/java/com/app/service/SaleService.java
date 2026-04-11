@@ -5,6 +5,7 @@ import com.app.model.Employee;
 import com.app.model.Customer;
 import com.app.model.Product;
 import com.app.model.Payment;
+import com.app.model.Commission;
 import com.app.repository.SaleRepository;
 import com.app.repository.EmployeeRepository;
 import com.app.repository.CustomerRepository;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -40,17 +42,33 @@ public class SaleService {
     
     @Autowired
     private TransactionService transactionService;
+
+    @Autowired
+    private CommissionService commissionService;
+
+    /**
+     * Helper method to populate employee information for sales
+     */
+    private void populateEmployeeInfo(List<Sale> sales) {
+        for (Sale sale : sales) {
+            try {
+                // Populate created by employee
+                Employee createdBy = employeeRepository.findById(sale.getCreatedById()).orElse(null);
+                sale.setCreatedByEmployee(createdBy);
+            } catch (Exception e) {
+                // Ignore errors
+            }
+        }
+    }
     
     public List<Sale> getAllSales() {
-        return saleRepository.findAll();
+        List<Sale> sales = saleRepository.findAll();
+        populateEmployeeInfo(sales);
+        return sales;
     }
     
     public List<Sale> getSalesByEmployee(Long employeeId) {
-        Optional<Employee> employee = employeeRepository.findById(employeeId);
-        if (employee.isEmpty()) {
-            return List.of();
-        }
-        List<Sale> sales = saleRepository.findByEmployee(employee.get());
+        List<Sale> sales = saleRepository.findByCreatedById(employeeId);
         // Initialize payments for each sale to avoid lazy loading issues
         for (Sale sale : sales) {
             try {
@@ -60,16 +78,116 @@ public class SaleService {
                 sale.setPayments(java.util.Collections.emptyList());
             }
         }
+        populateEmployeeInfo(sales);
+        return sales;
+    }
+
+    /**
+     * Gets all sales visible to the given employee based on their hierarchy level.
+     * This follows the same logic as customer filtering.
+     * - Promoter: Sales where promoterId = employee.id
+     * - Zonal Head: Sales where zonalHeadId = employee.id OR (clusterHeadId in reporting cluster heads OR asmId in reporting ASMs)
+     * - Cluster Head: Sales where clusterHeadId = employee.id OR asmId in reporting ASMs
+     * - Area Sales Manager: Sales where asmId = employee.id
+     */
+    public List<Sale> getSalesForEmployee(Employee employee) {
+        if (employee == null || employee.getId() == null) {
+            return List.of();
+        }
+
+        List<Sale> sales = getSalesForEmployeeByHierarchy(employee);
+
+        // Initialize payments for each sale to avoid lazy loading issues
+        for (Sale sale : sales) {
+            try {
+                List<Payment> payments = paymentRepository.findBySaleId(sale.getId());
+                sale.setPayments(payments);
+            } catch (Exception e) {
+                sale.setPayments(java.util.Collections.emptyList());
+            }
+        }
+
+        populateEmployeeInfo(sales);
+        return sales;
+    }
+
+    /**
+     * Gets all sales visible to the given employee based on their hierarchy level.
+     */
+    private List<Sale> getSalesForEmployeeByHierarchy(Employee employee) {
+        if (employee == null || employee.getId() == null) {
+            return List.of();
+        }
+
+        String hierarchyLevel = employee.getHierarchyLevel();
+        Long employeeId = employee.getId();
+
+        if ("PROMOTER".equals(hierarchyLevel)) {
+            return saleRepository.findByPromoterId(employeeId);
+        } else if ("ZONAL_HEAD".equals(hierarchyLevel)) {
+            // Get sales directly assigned to this zonal head
+            List<Sale> sales = new java.util.ArrayList<>(saleRepository.findByZonalHeadId(employeeId));
+
+            // Get all cluster heads reporting to this zonal head
+            List<Employee> clusterHeads = employeeRepository.findAll().stream()
+                    .filter(e -> "CLUSTER_HEAD".equals(e.getHierarchyLevel())
+                            && e.getReportingManager() != null
+                            && e.getReportingManager().getId().equals(employeeId))
+                    .toList();
+
+            // Get sales of those cluster heads
+            for (Employee clusterHead : clusterHeads) {
+                sales.addAll(saleRepository.findByClusterHeadId(clusterHead.getId()));
+            }
+
+            // Get all ASMs reporting to those cluster heads
+            for (Employee clusterHead : clusterHeads) {
+                List<Employee> asms = employeeRepository.findAll().stream()
+                        .filter(e -> "AREA_SALES_MANAGER".equals(e.getHierarchyLevel())
+                                && e.getReportingManager() != null
+                                && e.getReportingManager().getId().equals(clusterHead.getId()))
+                        .toList();
+                for (Employee asm : asms) {
+                    sales.addAll(saleRepository.findByAsmId(asm.getId()));
+                }
+            }
+
+            return sales.stream().distinct().toList();
+        } else if ("CLUSTER_HEAD".equals(hierarchyLevel)) {
+            // Get sales directly assigned to this cluster head
+            List<Sale> sales = new java.util.ArrayList<>(saleRepository.findByClusterHeadId(employeeId));
+
+            // Get all ASMs reporting to this cluster head
+            List<Employee> asms = employeeRepository.findAll().stream()
+                    .filter(e -> "AREA_SALES_MANAGER".equals(e.getHierarchyLevel())
+                            && e.getReportingManager() != null
+                            && e.getReportingManager().getId().equals(employeeId))
+                    .toList();
+
+            // Get sales of those ASMs
+            for (Employee asm : asms) {
+                sales.addAll(saleRepository.findByAsmId(asm.getId()));
+            }
+
+            return sales.stream().distinct().toList();
+        } else if ("AREA_SALES_MANAGER".equals(hierarchyLevel)) {
+            return saleRepository.findByAsmId(employeeId);
+        }
+
+        return List.of();
+    }
+
+    public List<Sale> getSalesByCustomer(Long customerId) {
+        Optional<Customer> customer = customerRepository.findById(customerId);
+        List<Sale> sales = customer.map(saleRepository::findByCustomer).orElse(List.of());
+        populateEmployeeInfo(sales);
         return sales;
     }
     
-    public List<Sale> getSalesByCustomer(Long customerId) {
-        Optional<Customer> customer = customerRepository.findById(customerId);
-        return customer.map(saleRepository::findByCustomer).orElse(List.of());
-    }
-    
     public List<Sale> getSalesByDateRange(LocalDate startDate, LocalDate endDate) {
-        return saleRepository.findBySaleDateBetween(startDate, endDate);
+        List<Sale> sales = saleRepository.findBySaleDateBetween(startDate, endDate);
+        populateEmployeeInfo(sales);
+        return sales;
     }
     
     public Optional<Sale> getSaleById(Long id) {
@@ -77,6 +195,11 @@ public class SaleService {
     }
     
     public Sale saveSale(Sale sale) {
+        // Generate unique 10-char sale ID (PGES + 6 alphanumeric) for new sales
+        if (sale.getId() == null && (sale.getSaleId() == null || sale.getSaleId().isEmpty())) {
+            sale.setSaleId(generateSaleId());
+        }
+
         // Calculate total amount from product or unit price
         if (sale.getProduct() != null && sale.getProduct().getUnitPrice() != null && sale.getQuantity() != null) {
             sale.setUnitPrice(sale.getProduct().getUnitPrice());
@@ -94,34 +217,29 @@ public class SaleService {
             sale.setProductName(sale.getProduct().getName());
         }
         
-        // Commission will be calculated only when payment is fully completed
-        // Set commission to zero initially
-        sale.setCommissionAmount(BigDecimal.ZERO);
         
         return saleRepository.save(sale);
     }
-    
+
     /**
-     * Calculates and sets commission for the sale.
-     * Commission is calculated only for Area Sales Managers.
+     * Generate unique 10-char sale ID: PGES + 6 random alphanumeric characters.
      */
-    private void calculateAndSetCommission(Sale sale) {
-        Employee employee = sale.getEmployee();
-        if (!"AREA_SALES_MANAGER".equals(employee.getHierarchyLevel())) {
-            sale.setCommissionAmount(BigDecimal.ZERO);
-            return;
+    private String generateSaleId() {
+        SecureRandom random = new SecureRandom();
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        StringBuilder saleId = new StringBuilder("PGES");
+        for (int i = 0; i < 6; i++) {
+            saleId.append(chars.charAt(random.nextInt(chars.length())));
         }
-        
-        Product product = sale.getProduct();
-        if (product == null || sale.getTotalAmount() == null) {
-            sale.setCommissionAmount(BigDecimal.ZERO);
-            return;
+        while (saleRepository.findBySaleId(saleId.toString()).isPresent()) {
+            saleId = new StringBuilder("PGES");
+            for (int i = 0; i < 6; i++) {
+                saleId.append(chars.charAt(random.nextInt(chars.length())));
+            }
         }
-        
-        // Calculate commission based on product's commission settings
-        BigDecimal commission = product.calculateCommission(sale.getTotalAmount());
-        sale.setCommissionAmount(commission);
+        return saleId.toString();
     }
+    
     
     /**
      * Adds a payment to a sale and generates an invoice number
@@ -130,17 +248,24 @@ public class SaleService {
         Sale sale = saleRepository.findById(saleId)
                 .orElseThrow(() -> new IllegalArgumentException("Sale not found"));
         
+        // Validate transaction ID uniqueness if provided
+        if (transactionId != null && !transactionId.trim().isEmpty()) {
+            Payment existingPayment = paymentRepository.findByTransactionId(transactionId.trim());
+            if (existingPayment != null) {
+                throw new IllegalArgumentException("Duplicate transaction reference. This transaction ID has already been used for another payment.");
+            }
+        }
+        
         Payment payment = new Payment();
         payment.setSale(sale);
         payment.setAmount(amount);
         payment.setPaymentDate(LocalDateTime.now());
         payment.setTransactionMode(transactionMode);
-        payment.setTransactionId(transactionId);
+        payment.setTransactionId(transactionId != null ? transactionId.trim() : null);
         payment.setNotes(notes);
-        
-        // Generate invoice number for this transaction
-        String invoiceNumber = transactionService.generateInvoiceNumber();
-        payment.setInvoiceNumber(invoiceNumber);
+
+        // Note: Invoice number will be generated when payment is settled by admin
+        // payment.setInvoiceNumber(invoiceNumber);
         
         Payment savedPayment = paymentRepository.save(payment);
         
@@ -149,49 +274,12 @@ public class SaleService {
             sale.setDueDate(dueDate);
         }
         
-        // Update sale status based on payment
-        updateSalePaymentStatus(sale);
+        // Update payment status and check if sale should be completed
+        updatePaymentStatus(sale);
         
         return savedPayment;
     }
     
-    /**
-     * Updates sale status based on payment status
-     * Calculates and applies commission only when payment is fully completed
-     */
-    private void updateSalePaymentStatus(Sale sale) {
-        List<Payment> payments = paymentRepository.findBySale(sale);
-        BigDecimal totalPaid = payments.stream()
-                .map(Payment::getAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        
-        String previousStatus = sale.getStatus();
-        boolean isFullyPaid = totalPaid.compareTo(sale.getTotalAmount()) >= 0;
-        boolean commissionNotCalculated = sale.getCommissionAmount() == null || 
-                                          sale.getCommissionAmount().compareTo(BigDecimal.ZERO) == 0;
-        
-        if (isFullyPaid) {
-            sale.setStatus("COMPLETED");
-            // Calculate and apply commission only when payment is fully completed and commission hasn't been calculated yet
-            if (commissionNotCalculated) {
-                calculateAndSetCommission(sale);
-            }
-        } else if (totalPaid.compareTo(BigDecimal.ZERO) > 0) {
-            sale.setStatus("PARTIAL");
-            // Reset commission to zero if status changes from COMPLETED to PARTIAL (shouldn't happen, but safety check)
-            if ("COMPLETED".equals(previousStatus) && !commissionNotCalculated) {
-                sale.setCommissionAmount(BigDecimal.ZERO);
-            }
-        } else {
-            sale.setStatus("PENDING");
-            // Reset commission to zero if status changes from COMPLETED to PENDING (shouldn't happen, but safety check)
-            if ("COMPLETED".equals(previousStatus) && !commissionNotCalculated) {
-                sale.setCommissionAmount(BigDecimal.ZERO);
-            }
-        }
-        
-        saleRepository.save(sale);
-    }
     
     /**
      * Gets all payments for a sale
@@ -200,37 +288,6 @@ public class SaleService {
         return paymentRepository.findBySaleId(saleId);
     }
     
-    /**
-     * Gets total commission for an employee in a date range
-     */
-    public BigDecimal getTotalCommissionByEmployee(Long employeeId, LocalDate startDate, LocalDate endDate) {
-        Optional<Employee> employee = employeeRepository.findById(employeeId);
-        if (employee.isEmpty()) {
-            return BigDecimal.ZERO;
-        }
-        
-        List<Sale> sales = saleRepository.findByEmployeeAndSaleDateBetween(employee.get(), startDate, endDate);
-        return sales.stream()
-                .filter(s -> s.getCommissionAmount() != null)
-                .map(Sale::getCommissionAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
-    
-    /**
-     * Gets total accumulated commission for an employee (all time)
-     */
-    public BigDecimal getTotalAccumulatedCommission(Long employeeId) {
-        Optional<Employee> employee = employeeRepository.findById(employeeId);
-        if (employee.isEmpty()) {
-            return BigDecimal.ZERO;
-        }
-        
-        List<Sale> sales = saleRepository.findByEmployee(employee.get());
-        return sales.stream()
-                .filter(s -> s.getCommissionAmount() != null)
-                .map(Sale::getCommissionAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
     
     public void deleteSale(Long id) {
         saleRepository.deleteById(id);
@@ -239,30 +296,35 @@ public class SaleService {
     public BigDecimal getTotalSalesByDateRange(LocalDate startDate, LocalDate endDate) {
         List<Sale> sales = saleRepository.findBySaleDateBetween(startDate, endDate);
         return sales.stream()
-                   .filter(s -> "COMPLETED".equals(s.getStatus()))
+                   .filter(s -> "COMPLETED".equals(s.getSaleStatus()))
                    .map(Sale::getTotalAmount)
                    .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
     
     public BigDecimal getTotalSalesByEmployee(Long employeeId, LocalDate startDate, LocalDate endDate) {
-        Optional<Employee> employee = employeeRepository.findById(employeeId);
-        if (employee.isEmpty()) {
-            return BigDecimal.ZERO;
-        }
-        
-        List<Sale> sales = saleRepository.findByEmployeeAndSaleDateBetween(employee.get(), startDate, endDate);
+        List<Sale> sales = saleRepository.findByCreatedByIdAndSaleDateBetween(employeeId, startDate, endDate);
         return sales.stream()
-                   .filter(s -> "COMPLETED".equals(s.getStatus()))
+                   .filter(s -> "COMPLETED".equals(s.getSaleStatus()))
                    .map(Sale::getTotalAmount)
                    .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
     
     public List<Sale> getSalesByEmployeeAndDateRange(Long employeeId, LocalDate startDate, LocalDate endDate) {
-        Optional<Employee> employee = employeeRepository.findById(employeeId);
-        if (employee.isEmpty()) {
-            return List.of();
-        }
-        return saleRepository.findByEmployeeAndSaleDateBetween(employee.get(), startDate, endDate);
+        List<Sale> sales = saleRepository.findByCreatedByIdAndSaleDateBetween(employeeId, startDate, endDate);
+        populateEmployeeInfo(sales);
+        return sales;
+    }
+
+    /**
+     * Gets sales visible to the employee within a date range based on hierarchy.
+     */
+    public List<Sale> getSalesForEmployeeAndDateRange(Employee employee, LocalDate startDate, LocalDate endDate) {
+        List<Sale> allSales = getSalesForEmployee(employee);
+        return allSales.stream()
+                .filter(sale -> sale.getSaleDate() != null &&
+                        !sale.getSaleDate().isBefore(startDate) &&
+                        !sale.getSaleDate().isAfter(endDate))
+                .toList();
     }
     
     /**
@@ -275,7 +337,7 @@ public class SaleService {
         
         for (Sale sale : sales) {
             // Only count completed sales
-            if (!"COMPLETED".equals(sale.getStatus())) {
+            if (!"COMPLETED".equals(sale.getSaleStatus())) {
                 continue;
             }
             
@@ -293,6 +355,59 @@ public class SaleService {
         }
         
         return revenueMap;
+    }
+
+    /**
+     * Check if a sale should be marked as completed
+     * Sale is completed when all payments are settled and payment status is COMPLETED
+     */
+    @Transactional
+    public void checkAndCompleteSale(Sale sale) {
+        // Get all payments for this sale
+        List<Payment> payments = paymentRepository.findBySale(sale);
+
+        // Check if all payments are settled
+        boolean allPaymentsSettled = payments.stream()
+                .allMatch(payment -> payment.getSettled() != null && payment.getSettled());
+
+        // Check if payment status is COMPLETED
+        boolean paymentStatusCompleted = "COMPLETED".equals(sale.getPaymentStatus());
+
+        if (allPaymentsSettled && paymentStatusCompleted && !"COMPLETED".equals(sale.getSaleStatus())) {
+            // Mark sale as completed
+            sale.setSaleStatus("COMPLETED");
+            saleRepository.save(sale);
+
+            // Create commission entry only if one doesn't exist
+            List<Commission> existingCommissions = commissionService.getCommissionRepository().findBySale(sale);
+            if (existingCommissions.isEmpty()) {
+                commissionService.createCommissionForSale(sale);
+            }
+        }
+    }
+
+    /**
+     * Update payment status based on payments
+     */
+    @Transactional
+    public void updatePaymentStatus(Sale sale) {
+        List<Payment> payments = paymentRepository.findBySale(sale);
+        BigDecimal totalPaid = payments.stream()
+                .map(Payment::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        if (totalPaid.compareTo(BigDecimal.ZERO) == 0) {
+            sale.setPaymentStatus("PENDING");
+        } else if (totalPaid.compareTo(sale.getTotalAmount()) < 0) {
+            sale.setPaymentStatus("PARTIAL");
+        } else {
+            sale.setPaymentStatus("COMPLETED");
+        }
+
+        saleRepository.save(sale);
+
+        // Check if sale should be completed after payment status update
+        checkAndCompleteSale(sale);
     }
 }
 

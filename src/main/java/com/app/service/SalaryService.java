@@ -19,15 +19,11 @@ public class SalaryService {
     private SalaryRepository salaryRepository;
     
     public List<Salary> getSalariesByEmployee(Employee employee) {
-        return salaryRepository.findByEmployeeOrderBySalaryMonthDesc(employee);
+        return salaryRepository.findByEmployeeOrderByStartDateDesc(employee);
     }
     
     public List<Salary> getSalariesByEmployeeAndStatus(Employee employee, String status) {
         return salaryRepository.findByEmployeeAndStatus(employee, status);
-    }
-    
-    public Optional<Salary> getSalaryByEmployeeAndMonth(Employee employee, LocalDate salaryMonth) {
-        return salaryRepository.findByEmployeeAndSalaryMonth(employee, salaryMonth);
     }
     
     public Salary saveSalary(Salary salary) {

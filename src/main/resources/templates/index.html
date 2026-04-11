@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Potens Green - Fuel Marketing Company</title>
+    <title>Potens Green Engineering Solutions Pvt. Ltd. - Engineering the Future of Indian Business</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
         :root {
             --primary-color: #28a745;
             --secondary-color: #155724;
-            --accent-color: #6c757d;
+            --accent-color: #0d6efd;
+            --dark-bg: #1a1a1a;
         }
         
         * {
@@ -40,7 +41,7 @@
         
         .navbar.scrolled {
             padding: 0.5rem 0;
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.98);
         }
         
         .navbar-brand {
@@ -53,12 +54,29 @@
         .navbar-nav .nav-link {
             color: #333 !important;
             font-weight: 500;
-            margin: 0 0.5rem;
+            margin: 0 0.3rem;
             transition: color 0.3s ease;
+            position: relative;
         }
         
         .navbar-nav .nav-link:hover {
             color: var(--primary-color) !important;
+        }
+        
+        .navbar-nav .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 50%;
+            background-color: var(--primary-color);
+            transition: all 0.3s ease;
+        }
+        
+        .navbar-nav .nav-link:hover::after {
+            width: 80%;
+            left: 10%;
         }
         
         .btn-login {
@@ -112,10 +130,11 @@
             line-height: 1.2;
         }
         
-        .hero p {
-            font-size: 1.3rem;
-            margin-bottom: 2rem;
+        .hero .sub-headline {
+            font-size: 1.4rem;
+            margin-bottom: 2.5rem;
             opacity: 0.95;
+            font-weight: 300;
         }
         
         .hero-buttons {
@@ -125,12 +144,14 @@
         }
         
         .btn-hero {
-            padding: 0.8rem 2.5rem;
+            padding: 0.9rem 2.5rem;
             font-size: 1.1rem;
             border-radius: 30px;
             font-weight: 600;
             transition: all 0.3s ease;
             border: 2px solid white;
+            text-decoration: none;
+            display: inline-block;
         }
         
         .btn-hero-primary {
@@ -142,6 +163,7 @@
             background: rgba(255, 255, 255, 0.9);
             transform: translateY(-3px);
             box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            color: #667eea;
         }
         
         .btn-hero-outline {
@@ -152,17 +174,44 @@
         .btn-hero-outline:hover {
             background: rgba(255, 255, 255, 0.1);
             transform: translateY(-3px);
+            color: white;
         }
         
-        /* Features Section */
-        .features {
+        /* Stats Bar */
+        .stats-bar {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px 0;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 10;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            font-size: 1rem;
+            color: #666;
+            font-weight: 500;
+        }
+        
+        /* Section Styles */
+        .section {
             padding: 80px 0;
-            background: #f8f9fa;
         }
         
         .section-title {
             text-align: center;
-            font-size: 2.5rem;
+            font-size: 2.8rem;
             font-weight: 700;
             margin-bottom: 1rem;
             color: #333;
@@ -175,102 +224,185 @@
             margin-bottom: 4rem;
         }
         
-        .feature-card {
+        .section-content {
+            font-size: 1.1rem;
+            color: #555;
+            line-height: 1.8;
+        }
+        
+        /* About Section */
+        .about {
+            background: white;
+        }
+        
+        .pillar-card {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid var(--primary-color);
+            transition: all 0.3s ease;
+        }
+        
+        .pillar-card:hover {
+            transform: translateX(10px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .pillar-card h4 {
+            color: var(--primary-color);
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Division Cards */
+        .division-card {
             background: white;
             padding: 2.5rem;
             border-radius: 15px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.08);
             transition: all 0.3s ease;
             height: 100%;
-            text-align: center;
+            margin-bottom: 2rem;
         }
         
-        .feature-card:hover {
+        .division-card:hover {
             transform: translateY(-10px);
             box-shadow: 0 15px 30px rgba(0,0,0,0.15);
         }
         
-        .feature-icon {
+        .division-card.highlight {
+            border: 3px solid var(--primary-color);
+            background: linear-gradient(135deg, #f8fff9 0%, #ffffff 100%);
+        }
+        
+        .division-icon {
             font-size: 3.5rem;
             color: var(--primary-color);
             margin-bottom: 1.5rem;
         }
         
-        .feature-card h3 {
-            font-size: 1.5rem;
+        .division-card h3 {
+            font-size: 1.8rem;
             font-weight: 700;
             margin-bottom: 1rem;
             color: #333;
         }
         
-        .feature-card p {
-            color: #6c757d;
-            line-height: 1.8;
+        .division-card h4 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            margin-bottom: 0.8rem;
+            color: var(--primary-color);
         }
         
-        /* About Section */
-        .about {
-            padding: 80px 0;
+        .division-card ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .division-card ul li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+            color: #555;
+        }
+        
+        .division-card ul li::before {
+            content: '\f00c';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            left: 0;
+            color: var(--primary-color);
+        }
+        
+        /* Partnerships Section */
+        .partnerships {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+        .partner-logo {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 1rem;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+
+            min-height: 230px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .partner-logo:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        /* Contact Section */
+        .contact {
             background: white;
         }
         
-        .about-content {
-            display: flex;
-            align-items: center;
-            gap: 4rem;
+        .contact-info {
+            background: #f8f9fa;
+            padding: 2.5rem;
+            border-radius: 15px;
+            height: 100%;
         }
         
-        .about-text h2 {
-            font-size: 2.5rem;
+        .contact-info h4 {
+            color: var(--primary-color);
             font-weight: 700;
             margin-bottom: 1.5rem;
-            color: #333;
         }
         
-        .about-text p {
-            font-size: 1.1rem;
-            color: #6c757d;
-            line-height: 1.8;
-            margin-bottom: 1.5rem;
+        .contact-info p {
+            margin-bottom: 1rem;
+            color: #555;
         }
         
-        .about-image {
-            flex: 1;
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-            border-radius: 20px;
-            height: 400px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .contact-info i {
+            color: var(--primary-color);
+            margin-right: 0.5rem;
+            width: 20px;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            border: 1px solid #ddd;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+        }
+        
+        .btn-submit {
+            background: var(--primary-color);
             color: white;
-            font-size: 8rem;
+            padding: 0.75rem 2.5rem;
+            border-radius: 25px;
+            font-weight: 600;
+            border: none;
+            transition: all 0.3s ease;
         }
         
-        /* Stats Section */
-        .stats {
-            padding: 60px 0;
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-            color: white;
-        }
-        
-        .stat-item {
-            text-align: center;
-        }
-        
-        .stat-number {
-            font-size: 3.5rem;
-            font-weight: 800;
-            margin-bottom: 0.5rem;
-        }
-        
-        .stat-label {
-            font-size: 1.2rem;
-            opacity: 0.9;
+        .btn-submit:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
         
         /* Footer */
         .footer {
-            background: #1a1a1a;
+            background: var(--dark-bg);
             color: white;
             padding: 60px 0 20px;
         }
@@ -308,21 +440,35 @@
             color: #888;
         }
         
+        /* Modal Styles */
+        .modal-content {
+            border-radius: 15px;
+        }
+        
+        .modal-header {
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .modal-title {
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+        
         @media (max-width: 768px) {
             .hero h1 {
                 font-size: 2.5rem;
             }
             
-            .hero p {
+            .hero .sub-headline {
                 font-size: 1.1rem;
             }
             
-            .about-content {
-                flex-direction: column;
+            .section-title {
+                font-size: 2rem;
             }
             
-            .about-image {
-                width: 100%;
+            .stat-number {
+                font-size: 2rem;
             }
         }
     </style>
@@ -331,8 +477,11 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg">
         <div class="container">
-            <a class="navbar-brand" href="/">
-                <i class="fas fa-leaf"></i> Potens Green
+<!--            <a class="navbar-brand" href="#home">-->
+<!--                <i class="fas fa-cogs"></i> Potens Green-->
+<!--            </a>-->
+            <a class="navbar-brand d-flex align-items-center gap-2" th:href="@{/}">
+                <img th:src="@{/images/PGE.png}" alt="PGE" style="height:40px;">
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -343,10 +492,13 @@
                         <a class="nav-link" href="#home">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#about">About</a>
+                        <a class="nav-link" href="#about">About Us</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#services">Services</a>
+                        <a class="nav-link" href="#divisions">Divisions</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#partnerships">Partnerships & Network</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#contact">Contact</a>
@@ -363,129 +515,320 @@
     <section class="hero" id="home">
         <div class="container">
             <div class="hero-content">
-                <h1>Powering Your Future with Clean Energy</h1>
-                <p>Potens Green is a leading fuel marketing company committed to delivering sustainable energy solutions and exceptional service to businesses and communities across the region.</p>
+                <h1>Engineering the Future of Indian Business</h1>
+                <p class="sub-headline">From national fuel logistics to AI-driven software and global trade—we engineer scalable ecosystems. <strong>Since 2010.</strong></p>
                 <div class="hero-buttons">
-                    <a th:href="@{/employee/login}" class="btn btn-hero btn-hero-primary">Employee Portal</a>
-                    <a th:href="@{/admin/login}" class="btn btn-hero btn-hero-outline">Admin Portal</a>
+                    <a href="#divisions" class="btn btn-hero btn-hero-primary">Explore Our Divisions</a>
+                    <a href="#partner-form" class="btn btn-hero btn-hero-outline" data-bs-toggle="modal" data-bs-target="#partnerModal">Partner With Us</a>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Features Section -->
-    <section class="features" id="services">
-        <div class="container">
-            <h2 class="section-title">Our Services</h2>
-            <p class="section-subtitle">Comprehensive fuel solutions tailored to your needs</p>
-            
-            <div class="row g-4">
-                <div class="col-md-4">
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-gas-pump"></i>
-                        </div>
-                        <h3>Fuel Distribution</h3>
-                        <p>Reliable and efficient fuel distribution services with state-of-the-art logistics and delivery systems to meet your energy requirements.</p>
-                    </div>
-                </div>
-                
-                <div class="col-md-4">
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-leaf"></i>
-                        </div>
-                        <h3>Sustainable Solutions</h3>
-                        <p>Leading the way in green energy alternatives with eco-friendly fuel options that reduce environmental impact while maintaining performance.</p>
-                    </div>
-                </div>
-                
-                <div class="col-md-4">
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-handshake"></i>
-                        </div>
-                        <h3>B2B Partnerships</h3>
-                        <p>Strategic partnerships with businesses of all sizes, providing customized fuel solutions and exceptional customer service.</p>
-                    </div>
-                </div>
-                
-                <div class="col-md-4">
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-truck"></i>
-                        </div>
-                        <h3>Fleet Management</h3>
-                        <p>Comprehensive fleet fuel management services designed to optimize operations and reduce costs for transportation businesses.</p>
-                    </div>
-                </div>
-                
-                <div class="col-md-4">
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-chart-line"></i>
-                        </div>
-                        <h3>Market Insights</h3>
-                        <p>Data-driven market analysis and fuel pricing strategies to help businesses make informed decisions about their energy needs.</p>
-                    </div>
-                </div>
-                
-                <div class="col-md-4">
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-shield-alt"></i>
-                        </div>
-                        <h3>Quality Assurance</h3>
-                        <p>Rigorous quality control and safety standards ensuring that all fuel products meet the highest industry specifications.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- About Section -->
-    <section class="about" id="about">
-        <div class="container">
-            <div class="about-content">
-                <div class="about-text">
-                    <h2>About Potens Green</h2>
-                    <p>Potens Green has been at the forefront of the fuel marketing industry, providing reliable and sustainable energy solutions for over a decade. Our commitment to excellence, innovation, and environmental responsibility sets us apart in the market.</p>
-                    <p>We specialize in B2B fuel distribution, working closely with businesses to understand their unique energy requirements and deliver tailored solutions that drive efficiency and reduce costs.</p>
-                    <p>Our team of experienced professionals is dedicated to maintaining the highest standards of service, safety, and environmental stewardship in everything we do.</p>
-                </div>
-                <div class="about-image">
-                    <i class="fas fa-industry"></i>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Stats Section -->
-    <section class="stats">
+    <!-- Stats Bar -->
+    <section class="stats-bar">
         <div class="container">
             <div class="row">
-                <div class="col-md-3 col-sm-6 mb-4">
+                <div class="col-md-3 col-sm-6">
                     <div class="stat-item">
-                        <div class="stat-number">10+</div>
-                        <div class="stat-label">Years of Experience</div>
+                        <div class="stat-number">15+</div>
+                        <div class="stat-label">Years of Excellence</div>
                     </div>
                 </div>
-                <div class="col-md-3 col-sm-6 mb-4">
+                <div class="col-md-3 col-sm-6">
                     <div class="stat-item">
-                        <div class="stat-number">500+</div>
-                        <div class="stat-label">Business Partners</div>
+                        <div class="stat-number">PAN India</div>
+                        <div class="stat-label">Operational Network</div>
                     </div>
                 </div>
-                <div class="col-md-3 col-sm-6 mb-4">
+                <div class="col-md-3 col-sm-6">
                     <div class="stat-item">
-                        <div class="stat-number">24/7</div>
-                        <div class="stat-label">Customer Support</div>
+                        <div class="stat-number">All Major OMCs</div>
+                        <div class="stat-label">as Partners</div>
                     </div>
                 </div>
-                <div class="col-md-3 col-sm-6 mb-4">
+                <div class="col-md-3 col-sm-6">
                     <div class="stat-item">
-                        <div class="stat-number">100%</div>
-                        <div class="stat-label">Quality Guarantee</div>
+                        <div class="stat-number">Unlimited</div>
+                        <div class="stat-label">Scalability for National Projects</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Us Section -->
+    <section class="section about" id="about">
+        <div class="container">
+            <h2 class="section-title">Engineering Dreams Since 2010</h2>
+            
+            <div class="row mb-5">
+                <div class="col-lg-8 mx-auto">
+                    <div class="section-content">
+                        <h3 class="mb-4">Our Identity</h3>
+                        <p class="mb-4">Potens Green is not just an engineering firm; we are a multi-disciplinary execution engine. We specialize in taking complex technical requirements and materializing them into functional, profitable operations across any Indian state.</p>
+                        
+                        <h3 class="mb-4 mt-5">The Vision</h3>
+                        <p class="mb-4">To be the bridge between global innovation and local execution, empowering rural landscapes and urban centers alike.</p>
+                        
+                        <h3 class="mb-4 mt-5">The Mission</h3>
+                        <p class="mb-4">To provide robust technical infrastructure in Energy, Fintech, and Software that drives the next generation of Indian entrepreneurship.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <h3 class="text-center mb-4">Core Pillars</h3>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="pillar-card">
+                        <h4><i class="fas fa-lightbulb"></i> Innovation</h4>
+                        <p>We don't just use tech; we build it.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="pillar-card">
+                        <h4><i class="fas fa-shield-alt"></i> Integrity</h4>
+                        <p>Technical precision matched with ethical business.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="pillar-card">
+                        <h4><i class="fas fa-chart-line"></i> Development</h4>
+                        <p>Dedicated to Rural and Small Business growth.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Divisions Section -->
+    <section class="section" id="divisions" style="background: #f8f9fa;">
+        <div class="container">
+            <h2 class="section-title">Our Divisions</h2>
+            <p class="section-subtitle">Multi-disciplinary solutions across Energy, Fintech, Software, and Global Trading</p>
+            
+            <!-- Energy & Petroleum - HIGHLIGHTED -->
+            <div class="row mb-5">
+                <div class="col-12">
+                    <div class="division-card highlight">
+                        <div class="division-icon">
+                            <i class="fas fa-gas-pump"></i>
+                        </div>
+                        <h3>Energy & Petroleum (Fuel Delivery)</h3>
+                        <h4>Fueling India through Precision Logistics</h4>
+                        
+                        <h4>A. Doorstep Diesel Delivery (DDD) Solutions</h4>
+                        <ul>
+                            <li><strong>20L PESO-Approved Jerry Cans:</strong> High-grade, anti-static, and tamper-proof solutions for small-scale delivery (Generators, Agri-use).</li>
+                            <li><strong>2000L Mini Fuel Stations:</strong> Skid-mounted, "Plug-and-Play" stations for industrial sites and private fleets.</li>
+                            <li><strong>6000L PESO-Approved Fuel Bowsers:</strong> Advanced mobile tankers with digital flow meters and IoT tracking for large-scale mobile refueling.</li>
+                        </ul>
+                        
+                        <h4>B. OMC Partnership & Lease Guidance</h4>
+                        <p>We offer end-to-end consultancy for <strong>IOCL, HPCL, BPCL, and NAYARA</strong> fuel stations.</p>
+                        <ul>
+                            <li><strong>Leasing Assistance:</strong> Navigating the acquisition and operation of fully operational OMC stations.</li>
+                            <li><strong>Strategic Growth:</strong> Helping "FuelEnts" (Fuel Entrepreneurs) scale through professional consultancy.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <!-- Fintech & Digital Infrastructure -->
+                <div class="col-lg-6 mb-4">
+                    <div class="division-card">
+                        <div class="division-icon">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <h3>Fintech & Digital Infrastructure</h3>
+                        <h4>The Physical Backbone of Digital Finance</h4>
+                        <p><strong>Deployment Agency:</strong> We are a PAN India agency specializing in the massive rollout of Fintech hardware.</p>
+                        <ul>
+                            <li>Installation and maintenance of POS terminals, biometric devices, and micro-ATM infrastructure.</li>
+                            <li>Legacy of Trust: Proven track record with <strong>Radiant Acemoney Ltd.</strong>, and historical collaborations with <strong>Ebix</strong> and <strong>NSDL Prepaid Cards</strong>.</li>
+                            <li><strong>The "Potens" Edge:</strong> A workforce ready to mobilize in any district in India within record time.</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Software & AI Solutions -->
+                <div class="col-lg-6 mb-4">
+                    <div class="division-card">
+                        <div class="division-icon">
+                            <i class="fas fa-code"></i>
+                        </div>
+                        <h3>Software & AI Solutions</h3>
+                        <h4>Intelligent Code for Complex Challenges</h4>
+                        <ul>
+                            <li><strong>Custom Software Development:</strong> From technical ERPs to non-technical business management tools.</li>
+                            <li><strong>Supply Chain & Accounting:</strong> Specialized systems designed for high-volume logistics and financial transparency.</li>
+                            <li><strong>AI/ML Integration:</strong> Building the future with predictive analytics and machine learning models for business automation.</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Global Trading -->
+                <div class="col-lg-12">
+                    <div class="division-card">
+                        <div class="division-icon">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                        <h3>Global Trading (Electronics & Appliances)</h3>
+                        <h4>Importing Excellence, Delivering Value</h4>
+                        <p>We leverage our global supply chain to import and trade high-performance electronics and household appliances.</p>
+                        <h4>Product Categories:</h4>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <h5><i class="fas fa-tv"></i> Home Entertainment</h5>
+                                <p>LED TVs (HD/4K/Smart), Music Systems, and Home Theaters.</p>
+                            </div>
+                            <div class="col-md-4">
+                                <h5><i class="fas fa-snowflake"></i> Climate Control</h5>
+                                <p>Energy-efficient Air Conditioners (Inverter/Fixed).</p>
+                            </div>
+                            <div class="col-md-4">
+                                <h5><i class="fas fa-home"></i> Home Utilities</h5>
+                                <p>Refrigerators, Washing Machines, and specialized kitchen appliances.</p>
+                            </div>
+                        </div>
+                        <p class="mt-3"><strong>Compliance Focus:</strong> Full adherence to <strong>BIS, EPR, and WPC</strong> standards, ensuring every product is certified for the Indian market.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Partnerships Section -->
+    <section class="section partnerships" id="partnerships">
+        <div class="container">
+            <h2 class="section-title">Partnerships & National Network</h2>
+            <h4 class="text-center mb-4">Scalability Without Borders</h4>
+
+            <div class="row mb-5">
+                <div class="col-lg-8 mx-auto">
+                    <div class="section-content">
+                        <p class="mb-4"><strong>Operational Reach:</strong> We possess a "Ready-to-Deploy" workforce. Our network allows us to take on national-level projects in operations and marketing across all 28 states and UTs.</p>
+
+                        <h4 class="mt-4 mb-3">Strategic Alliances:</h4>
+                        <div class="row g-4">
+                            <div class="col-md-6 d-flex">
+                                <div class="partner-logo w-100">
+                                    <i class="fas fa-industry" style="font-size: 2.5rem; color: var(--primary-color);"></i>
+                                    <h5 class="mt-3">Energy</h5>
+                                    <p>All major OMCs</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6 d-flex">
+                                <div class="partner-logo w-100">
+                                    <i class="fas fa-credit-card" style="font-size: 2.5rem; color: var(--primary-color);"></i>
+                                    <h5 class="mt-3">Fintech</h5>
+                                    <p>Aceware Fintech Services Pvt. Ltd.</p>
+                                    <p>Emerald Business Ventures Pvt. Ltd.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        
+                        <p class="mt-4"><strong>The Proposition:</strong> We invite global brands and national companies to utilize our infrastructure to "Materialize" their business goals on the ground.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="section contact" id="contact">
+        <div class="container">
+            <h2 class="section-title">Contact Us</h2>
+            
+            <div class="row">
+                <div class="col-lg-4 mb-4">
+                    <div class="contact-info">
+                        <h4><i class="fas fa-building"></i> Office Locations</h4>
+                        
+                        <div class="mb-4">
+                            <h5 style="color: var(--primary-color); font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem;">
+                                <i class="fas fa-map-marker-alt"></i> Corporate Office (Primary)
+                            </h5>
+                            <p style="margin-bottom: 0.5rem; font-size: 0.95rem;">
+                                Unit 511A, 5th Floor, PS Cube,<br>
+                                New Town, Kolkata 700161,<br>
+                                West Bengal, India
+                            </p>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h5 style="color: var(--primary-color); font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem;">
+                                <i class="fas fa-map-marker-alt"></i> Corporate Office (Northeast)
+                            </h5>
+                            <p style="margin-bottom: 0.5rem; font-size: 0.95rem;">
+                                F-03, STPI, SOS Road, Borjhar,<br>
+                                Guwahati, Assam 781015
+                            </p>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h5 style="color: var(--primary-color); font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem;">
+                                <i class="fas fa-map-marker-alt"></i> Branch Office (Northeast)
+                            </h5>
+                            <p style="margin-bottom: 0.5rem; font-size: 0.95rem;">
+                                3rd. Floor, Megha Plaza, Basistha,<br>
+                                Guwahati 781029
+                            </p>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h5 style="color: var(--primary-color); font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem;">
+                                <i class="fas fa-map-marker-alt"></i> Corporate Office (NCR)
+                            </h5>
+                            <p style="margin-bottom: 0.5rem; font-size: 0.95rem;">
+                                30, Electronic City, Phase IV,<br>
+                                Udyog Vihar, Sector 18,<br>
+                                Gurugram, Haryana 122015
+                            </p>
+                        </div>
+                        
+                        <h4 class="mt-4"><i class="fas fa-envelope"></i> Email</h4>
+                        <p><i class="fas fa-envelope"></i> admin@potensgreenengineering.in</p>
+                        <p><i class="fas fa-envelope"></i> info@potensgreenengineering.in</p>
+                        
+                        <div class="mt-4">
+                            <button class="btn btn-submit w-100" data-bs-toggle="modal" data-bs-target="#proposalModal">
+                                <i class="fas fa-file-alt"></i> Request a Proposal
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-8">
+                    <div class="card" style="border: none; box-shadow: 0 5px 15px rgba(0,0,0,0.08);">
+                        <div class="card-body p-4">
+                            <h4 class="mb-4">Get in Touch</h4>
+                            <form id="contactForm">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Name *</label>
+                                        <input type="text" class="form-control" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Email *</label>
+                                        <input type="email" class="form-control" required>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Subject</label>
+                                    <input type="text" class="form-control">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Message *</label>
+                                    <textarea class="form-control" rows="5" required></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-submit">
+                                    <i class="fas fa-paper-plane"></i> Send Message
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -493,37 +836,179 @@
     </section>
 
     <!-- Footer -->
-    <footer class="footer" id="contact">
+    <footer class="footer">
         <div class="container">
             <div class="row">
                 <div class="col-md-4 mb-4">
-                    <h5><i class="fas fa-leaf"></i> Potens Green</h5>
-                    <p style="color: #ccc; line-height: 1.8;">Leading the future of fuel marketing with sustainable solutions and exceptional service.</p>
+                    <h5><i class="fas fa-cogs"></i> Potens Green Engineering Solutions</h5>
+                    <p style="color: #ccc; line-height: 1.8;">Engineering the Future of Indian Business. From national fuel logistics to AI-driven software and global trade—we engineer scalable ecosystems.</p>
                 </div>
                 <div class="col-md-4 mb-4">
                     <h5>Quick Links</h5>
                     <ul>
                         <li><a href="#home">Home</a></li>
                         <li><a href="#about">About Us</a></li>
-                        <li><a href="#services">Services</a></li>
-                        <li><a th:href="@{/employee/login}">Employee Portal</a></li>
-                        <li><a th:href="@{/admin/login}">Admin Portal</a></li>
+                        <li><a href="#divisions">Divisions</a></li>
+                        <li><a href="#partnerships">Partnerships & Network</a></li>
+                        <li><a href="#contact">Contact</a></li>
                     </ul>
                 </div>
                 <div class="col-md-4 mb-4">
-                    <h5>Contact Us</h5>
+                    <h5>Contact</h5>
                     <ul>
-                        <li><i class="fas fa-envelope"></i> info@potensgreen.com</li>
-                        <li><i class="fas fa-phone"></i> +1 (555) 123-4567</li>
-                        <li><i class="fas fa-map-marker-alt"></i> 123 Energy Street, Fuel City</li>
+                        <li style="margin-bottom: 1rem;">
+                            <strong style="color: var(--primary-color);">Corporate Office (Primary):</strong><br>
+                            <i class="fas fa-map-marker-alt"></i> Unit 511A, 5th Floor, PS Cube,<br>
+                            &nbsp;&nbsp;&nbsp;New Town, Kolkata 700161,<br>
+                            &nbsp;&nbsp;&nbsp;West Bengal, India
+                        </li>
+                        <li style="margin-bottom: 1rem;">
+                            <strong style="color: var(--primary-color);">Corporate Office (Northeast):</strong><br>
+                            <i class="fas fa-map-marker-alt"></i> F-03, STPI, SOS Road, Borjhar,<br>
+                            &nbsp;&nbsp;&nbsp;Guwahati, Assam 781015
+                        </li>
+                        <li style="margin-bottom: 1rem;">
+                            <strong style="color: var(--primary-color);">Branch Office (Northeast):</strong><br>
+                            <i class="fas fa-map-marker-alt"></i> 3rd. Floor, Megha Plaza, Basistha,<br>
+                            &nbsp;&nbsp;&nbsp;Guwahati 781029
+                        </li>
+                        <li style="margin-bottom: 1rem;">
+                            <strong style="color: var(--primary-color);">Corporate Office (NCR):</strong><br>
+                            <i class="fas fa-map-marker-alt"></i> 30, Electronic City, Phase IV,<br>
+                            &nbsp;&nbsp;&nbsp;Udyog Vihar, Sector 18,<br>
+                            &nbsp;&nbsp;&nbsp;Gurugram, Haryana 122015
+                        </li>
+                        <li><i class="fas fa-envelope"></i> admin@potensgreenengineering.in</li>
+                        <li><i class="fas fa-envelope"></i> info@potensgreenengineering.in</li>
                     </ul>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2024 Potens Green. All rights reserved. | Fuel Marketing Excellence</p>
+                <p>&copy; 2024 Potens Green Engineering Solutions Pvt. Ltd. All rights reserved.</p>
             </div>
         </div>
     </footer>
+
+    <!-- Partner With Us Modal -->
+    <div class="modal fade" id="partnerModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-handshake"></i> Partner With Us</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="partnerForm" action="/partner/submit" method="post" onsubmit="return submitPartnerForm(event);" novalidate>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Name *</label>
+                                <input type="text" name="name" class="form-control" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Mobile No *</label>
+                                <input type="tel" name="mobile" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Address *</label>
+                            <textarea name="address" class="form-control" rows="3" required></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">District *</label>
+                                <input type="text" name="district" class="form-control" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Interested In *</label>
+                                <select name="interestedIn" class="form-select" required>
+                                    <option value="">Select...</option>
+                                    <option value="Small Delivery Point">Small Delivery Point</option>
+                                    <option value="Mini Pump">Mini Pump</option>
+                                    <option value="Fuel Bowser">Fuel Bowser</option>
+                                    <option value="Fuel Pump">Fuel Pump</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-submit">Submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="modal fade" id="successModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center p-5">
+                    <div class="mb-4">
+                        <i class="fas fa-check-circle" style="font-size: 4rem; color: var(--primary-color);"></i>
+                    </div>
+                    <h4 class="mb-3">Thank You!</h4>
+                    <p class="mb-4" id="successMessage">Your partnership interest has been submitted successfully. We will contact you shortly.</p>
+                    <button type="button" class="btn btn-submit" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Request Proposal Modal -->
+    <div class="modal fade" id="proposalModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-file-alt"></i> Request a Proposal</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="proposalForm" action="/proposal/submit" method="post">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Name *</label>
+                                <input type="text" name="name" class="form-control" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Email *</label>
+                                <input type="email" name="email" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Company/Organization</label>
+                                <input type="text" name="company" class="form-control">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Mobile No *</label>
+                                <input type="tel" name="mobile" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Service Interested In *</label>
+                            <select name="service" class="form-select" required>
+                                <option value="">Select...</option>
+                                <option value="Energy & Petroleum">Energy & Petroleum</option>
+                                <option value="Fintech & Infrastructure">Fintech & Infrastructure</option>
+                                <option value="Software & AI Solutions">Software & AI Solutions</option>
+                                <option value="Global Trading">Global Trading</option>
+                                <option value="Multiple Services">Multiple Services</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Requirements/Message *</label>
+                            <textarea name="message" class="form-control" rows="5" required></textarea>
+                        </div>
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-submit">Submit Request</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
@@ -540,15 +1025,86 @@
         // Smooth scrolling for anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
+                const href = this.getAttribute('href');
+                if (href !== '#' && href !== '#partner-form') {
+                    e.preventDefault();
+                    const target = document.querySelector(href);
+                    if (target) {
+                        const offsetTop = target.offsetTop - 80;
+                        window.scrollTo({
+                            top: offsetTop,
+                            behavior: 'smooth'
+                        });
+                    }
                 }
             });
+        });
+
+        // Form submissions
+        document.getElementById('contactForm')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Thank you for your message! We will get back to you soon.');
+            this.reset();
+        });
+
+        function submitPartnerForm(e) {
+            e.preventDefault();
+            const form = document.getElementById('partnerForm');
+            
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return false;
+            }
+            
+            // Get form data
+            const formData = new FormData(form);
+            
+            // Show loading state
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+            
+            // Submit via AJAX
+            fetch(form.action, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Close partner modal
+                    const partnerModal = bootstrap.Modal.getInstance(document.getElementById('partnerModal'));
+                    partnerModal.hide();
+                    
+                    // Reset form
+                    form.reset();
+                    
+                    // Show success modal
+                    const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                    successModal.show();
+                } else {
+                    throw new Error('Submission failed');
+                }
+            })
+            .catch(error => {
+                alert('An error occurred. Please try again later.');
+                console.error('Error:', error);
+            })
+            .finally(() => {
+                // Reset button state
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            });
+            
+            return false;
+        }
+
+        document.getElementById('proposalForm')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Thank you for your proposal request! We will send you a detailed proposal soon.');
+            this.reset();
+            const modal = bootstrap.Modal.getInstance(document.getElementById('proposalModal'));
+            modal.hide();
         });
     </script>
 </body>

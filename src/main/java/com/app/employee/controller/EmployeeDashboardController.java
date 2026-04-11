@@ -10,6 +10,9 @@ import com.app.service.AttendanceService;
 import com.app.service.TaskService;
 import com.app.service.SalesTargetService;
 import com.app.service.SaleService;
+import com.app.service.CommissionService;
+import com.app.service.LeaveRequestService;
+import com.app.service.ClaimService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -40,6 +43,15 @@ public class EmployeeDashboardController {
     
     @Autowired
     private SaleService saleService;
+
+    @Autowired
+    private CommissionService commissionService;
+    
+    @Autowired
+    private LeaveRequestService leaveRequestService;
+    
+    @Autowired
+    private ClaimService claimService;
     
     private Employee getCurrentEmployee() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -67,7 +79,15 @@ public class EmployeeDashboardController {
         // Get recent sales
         LocalDate startDate = LocalDate.now().minusDays(30);
         LocalDate endDate = LocalDate.now();
-        List<Sale> recentSales = saleService.getSalesByEmployeeAndDateRange(employee.getId(), startDate, endDate);
+        List<Sale> recentSales = saleService.getSalesForEmployeeAndDateRange(employee, startDate, endDate);
+        
+        // Get pending approvals for managers (if employee has reporting employees)
+        List<com.app.model.LeaveRequest> pendingLeaveRequests = null;
+        List<com.app.model.Claim> pendingClaims = null;
+        if (employeeService.getAllReportingEmployees(employee) != null && !employeeService.getAllReportingEmployees(employee).isEmpty()) {
+            pendingLeaveRequests = leaveRequestService.getPendingLeaveRequestsForManager(employee);
+            pendingClaims = claimService.getPendingClaimsForManager(employee);
+        }
         
         model.addAttribute("employee", employee);
         model.addAttribute("todayAttendance", todayAttendance);
@@ -76,6 +96,8 @@ public class EmployeeDashboardController {
         model.addAttribute("inProgressTasks", inProgressTasks);
         model.addAttribute("currentTarget", currentTarget.orElse(null));
         model.addAttribute("recentSales", recentSales);
+        model.addAttribute("pendingLeaveRequests", pendingLeaveRequests);
+        model.addAttribute("pendingClaims", pendingClaims);
         
         return "employee/dashboard";
     }
@@ -132,16 +154,15 @@ public class EmployeeDashboardController {
         List<SalesTarget> targets = salesTargetService.getSalesTargetsByEmployee(employee);
         Optional<SalesTarget> currentTarget = salesTargetService.getCurrentSalesTarget(employee);
         
-        // Calculate accumulated commission for ASM
-        java.math.BigDecimal totalCommission = java.math.BigDecimal.ZERO;
-        if ("AREA_SALES_MANAGER".equals(employee.getHierarchyLevel())) {
-            totalCommission = saleService.getTotalAccumulatedCommission(employee.getId());
-        }
+        // Calculate total commission amounts for the employee
+        java.math.BigDecimal totalApprovedCommission = commissionService.getTotalApprovedCommissionForEmployee(employee);
+        java.math.BigDecimal totalPendingCommission = commissionService.getTotalPendingCommissionForEmployee(employee);
         
         model.addAttribute("employee", employee);
         model.addAttribute("targets", targets);
         model.addAttribute("currentTarget", currentTarget.orElse(null));
-        model.addAttribute("totalCommission", totalCommission);
+        model.addAttribute("totalApprovedCommission", totalApprovedCommission);
+        model.addAttribute("totalPendingCommission", totalPendingCommission);
         
         return "employee/sales-target";
     }

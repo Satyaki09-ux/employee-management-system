@@ -2,6 +2,7 @@ package com.app.admin.controller;
 
 import com.app.model.Admin;
 import com.app.service.AdminService;
+import com.app.util.AdminPermissions;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -10,6 +11,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Controller
@@ -38,6 +40,8 @@ public class AdminController {
         // Get all active admins as potential parent admins for sub-admins
         List<Admin> parentAdmins = adminService.getActiveAdmins();
         model.addAttribute("parentAdmins", parentAdmins);
+        model.addAttribute("allPermissions", AdminPermissions.getAllPermissions());
+        model.addAttribute("permissionLabels", AdminPermissions.getPermissionLabels());
         return "admin/admins/form";
     }
     
@@ -51,20 +55,39 @@ public class AdminController {
                 .filter(a -> !a.getId().equals(id))
                 .toList();
         model.addAttribute("parentAdmins", parentAdmins);
+        model.addAttribute("allPermissions", AdminPermissions.getAllPermissions());
+        model.addAttribute("permissionLabels", AdminPermissions.getPermissionLabels());
+        // Parse existing permissions
+        if (admin.getPermissions() != null && !admin.getPermissions().isEmpty()) {
+            model.addAttribute("selectedPermissions", AdminPermissions.parsePermissions(admin.getPermissions()));
+        }
         return "admin/admins/form";
     }
     
     @PostMapping("/save")
     public String saveAdmin(@Valid @ModelAttribute Admin admin,
                            @RequestParam(required = false) Long parentAdminId,
+                           @RequestParam(required = false) String[] permissions,
                            BindingResult result,
                            Model model,
                            RedirectAttributes redirectAttributes) {
+        // Handle permissions
+        if (permissions != null && permissions.length > 0) {
+            admin.setPermissions(String.join(",", permissions));
+        } else {
+            admin.setPermissions("");
+        }
+        
         if (result.hasErrors()) {
             List<Admin> parentAdmins = adminService.getActiveAdmins().stream()
                     .filter(a -> admin.getId() == null || !a.getId().equals(admin.getId()))
                     .toList();
             model.addAttribute("parentAdmins", parentAdmins);
+            model.addAttribute("allPermissions", AdminPermissions.getAllPermissions());
+            model.addAttribute("permissionLabels", AdminPermissions.getPermissionLabels());
+            if (permissions != null && permissions.length > 0) {
+                model.addAttribute("selectedPermissions", Arrays.asList(permissions));
+            }
             return "admin/admins/form";
         }
         
@@ -74,12 +97,22 @@ public class AdminController {
                 result.rejectValue("email", "error.admin", "Email already exists");
                 List<Admin> parentAdmins = adminService.getActiveAdmins();
                 model.addAttribute("parentAdmins", parentAdmins);
+                model.addAttribute("allPermissions", AdminPermissions.getAllPermissions());
+                model.addAttribute("permissionLabels", AdminPermissions.getPermissionLabels());
+                if (permissions != null && permissions.length > 0) {
+                    model.addAttribute("selectedPermissions", Arrays.asList(permissions));
+                }
                 return "admin/admins/form";
             }
             if (adminService.usernameExists(admin.getUsername())) {
                 result.rejectValue("username", "error.admin", "Username already exists");
                 List<Admin> parentAdmins = adminService.getActiveAdmins();
                 model.addAttribute("parentAdmins", parentAdmins);
+                model.addAttribute("allPermissions", AdminPermissions.getAllPermissions());
+                model.addAttribute("permissionLabels", AdminPermissions.getPermissionLabels());
+                if (permissions != null && permissions.length > 0) {
+                    model.addAttribute("selectedPermissions", Arrays.asList(permissions));
+                }
                 return "admin/admins/form";
             }
         } else {
@@ -89,6 +122,11 @@ public class AdminController {
                         .filter(a -> !a.getId().equals(admin.getId()))
                         .toList();
                 model.addAttribute("parentAdmins", parentAdmins);
+                model.addAttribute("allPermissions", AdminPermissions.getAllPermissions());
+                model.addAttribute("permissionLabels", AdminPermissions.getPermissionLabels());
+                if (permissions != null && permissions.length > 0) {
+                    model.addAttribute("selectedPermissions", Arrays.asList(permissions));
+                }
                 return "admin/admins/form";
             }
             if (adminService.usernameExistsForOtherAdmin(admin.getUsername(), admin.getId())) {
@@ -97,6 +135,11 @@ public class AdminController {
                         .filter(a -> !a.getId().equals(admin.getId()))
                         .toList();
                 model.addAttribute("parentAdmins", parentAdmins);
+                model.addAttribute("allPermissions", AdminPermissions.getAllPermissions());
+                model.addAttribute("permissionLabels", AdminPermissions.getPermissionLabels());
+                if (permissions != null && permissions.length > 0) {
+                    model.addAttribute("selectedPermissions", Arrays.asList(permissions));
+                }
                 return "admin/admins/form";
             }
         }

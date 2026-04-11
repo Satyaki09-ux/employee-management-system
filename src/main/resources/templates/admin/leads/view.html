@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lead Details - Employee Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        <div th:replace="~{fragments/admin-header :: header}"></div>
+        <div th:replace="~{fragments/admin-sidebar :: sidebar}"></div>
+        <main class="main-content">
+            <div class="container">
+        <div th:if="${message}" class="alert alert-success">
+            <span th:text="${message}"></span>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-user-friends"></i> Lead Details</h1>
+            <a th:href="@{/admin/leads}" class="btn btn-secondary">Back to List</a>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Lead Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table">
+                            <tr>
+                                <th>Name:</th>
+                                <td th:text="${lead.name}"></td>
+                            </tr>
+                            <tr>
+                                <th>Mobile:</th>
+                                <td th:text="${lead.mobile}"></td>
+                            </tr>
+                            <tr>
+                                <th>Address:</th>
+                                <td th:text="${lead.address}"></td>
+                            </tr>
+                            <tr>
+                                <th>District:</th>
+                                <td th:text="${lead.district}"></td>
+                            </tr>
+                            <tr>
+                                <th>Interested In:</th>
+                                <td th:text="${lead.interestedIn}"></td>
+                            </tr>
+                            <tr>
+                                <th>Status:</th>
+                                <td>
+                                    <span class="badge" 
+                                          th:classappend="${lead.status == 'NEW'} ? 'badge-info' : 
+                                                          (${lead.status == 'CONTACTED'} ? 'badge-primary' :
+                                                          (${lead.status == 'QUALIFIED'} ? 'badge-warning' :
+                                                          (${lead.status == 'CONVERTED'} ? 'badge-success' : 'badge-danger')))"
+                                          th:text="${lead.status}">NEW</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Assigned To:</th>
+                                <td>
+                                    <span th:if="${lead.assignedTo != null}" th:text="${lead.assignedTo.fullName}">-</span>
+                                    <span th:if="${lead.assignedTo == null}" class="text-muted">Unassigned</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Created At:</th>
+                                <td th:text="${#temporals.format(lead.createdAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
+                            </tr>
+                            <tr>
+                                <th>Last Updated:</th>
+                                <td th:text="${#temporals.format(lead.updatedAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Notes</h5>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/admin/leads/update-notes/{id}(id=${lead.id})}" method="post">
+                            <div class="mb-3">
+                                <textarea name="notes" class="form-control" rows="5" th:text="${lead.notes}"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Update Notes
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/admin/leads/update-status/{id}(id=${lead.id})}" method="post" class="mb-3">
+                            <label class="form-label">Update Status</label>
+                            <select name="status" class="form-select mb-2">
+                                <option value="NEW" th:selected="${lead.status == 'NEW'}">New</option>
+                                <option value="CONTACTED" th:selected="${lead.status == 'CONTACTED'}">Contacted</option>
+                                <option value="QUALIFIED" th:selected="${lead.status == 'QUALIFIED'}">Qualified</option>
+                                <option value="CONVERTED" th:selected="${lead.status == 'CONVERTED'}">Converted</option>
+                                <option value="LOST" th:selected="${lead.status == 'LOST'}">Lost</option>
+                            </select>
+                            <button type="submit" class="btn btn-warning w-100">
+                                <i class="fas fa-sync"></i> Update Status
+                            </button>
+                        </form>
+
+                        <form th:action="@{/admin/leads/assign/{id}(id=${lead.id})}" method="post" class="mb-3">
+                            <label class="form-label">Assign To Employee</label>
+                            <select name="employeeId" class="form-select mb-2">
+                                <option value="">Unassign</option>
+                                <option th:each="emp : ${employees}" 
+                                        th:value="${emp.id}" 
+                                        th:text="${emp.fullName}"
+                                        th:selected="${lead.assignedTo != null and lead.assignedTo.id == emp.id}"></option>
+                            </select>
+                            <button type="submit" class="btn btn-info w-100">
+                                <i class="fas fa-user-tag"></i> Assign
+                            </button>
+                        </form>
+
+                        <form th:action="@{/admin/leads/delete/{id}(id=${lead.id})}" method="post" 
+                              onsubmit="return confirm('Are you sure you want to delete this lead?');">
+                            <button type="submit" class="btn btn-danger w-100">
+                                <i class="fas fa-trash"></i> Delete Lead
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+            </div>
+        </main>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/sidebar.js}"></script>
+</body>
+</html>

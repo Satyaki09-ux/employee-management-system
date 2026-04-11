@@ -10,27 +10,15 @@
 </head>
 <body>
     <div class="dashboard-wrapper">
-        <header class="top-header">
-            <div class="header-left">
-                <button class="mobile-menu-toggle" onclick="toggleMobileSidebar()" title="Toggle Sidebar">
-                    <i class="fas fa-bars"></i>
-                </button>
-                <button class="sidebar-expand-toggle" onclick="toggleSidebar()" title="Expand/Collapse Sidebar">
-                    <i class="fas fa-bars"></i>
-                </button>
-            </div>
-            <div class="company-name">Potens Green</div>
-            <form th:action="@{/logout}" method="post" style="display: inline;">
-                <button type="submit" class="logout-btn">Logout</button>
-            </form>
-        </header>
+                <div th:replace="~{fragments/employee-header :: header}"></div>
         <div th:replace="~{fragments/employee-sidebar :: sidebar}"></div>
         <main class="main-content">
             <div class="container">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1><i class="fas fa-receipt"></i> Transaction Details</h1>
             <div>
-                <a th:href="@{/employee/transactions/invoice/{id}(id=${transaction.id})}" class="btn btn-success" target="_blank">
+                <!-- Show View Invoice button only if transaction is settled -->
+                <a th:href="@{/employee/transactions/invoice/{id}(id=${transaction.id})}" class="btn btn-success" target="_blank" th:if="${transaction.settled != null and transaction.settled and transaction.invoiceNumber != null and !transaction.invoiceNumber.isEmpty()}">
                     <i class="fas fa-file-invoice"></i> View Invoice
                 </a>
                 <a th:href="@{/employee/transactions}" class="btn btn-secondary">Back to List</a>
@@ -58,9 +46,7 @@
                             <tr>
                                 <th>Transaction Mode:</th>
                                 <td>
-                                    <span class="badge" 
-                                          th:classappend="${transaction.transactionMode == 'CASH'} ? 'badge-success' : 
-                                                          (${transaction.transactionMode == 'UPI'} ? 'badge-info' : 'badge-primary')"
+                                    <span class="badge badge-info"
                                           th:text="${transaction.transactionMode}">CASH</span>
                                 </td>
                             </tr>
@@ -72,6 +58,14 @@
                                 <th>Notes:</th>
                                 <td th:text="${transaction.notes}">-</td>
                             </tr>
+                            <tr>
+                                <th>Settlement Status:</th>
+                                <td>
+                                    <span class="badge"
+                                          th:classappend="${transaction.settled != null and transaction.settled} ? 'badge-success' : 'badge-warning'"
+                                          th:text="${transaction.settled != null and transaction.settled ? 'Settled' : 'Not Settled'}">Not Settled</span>
+                                </td>
+                            </tr>
                         </table>
                     </div>
                 </div>
@@ -80,6 +74,10 @@
                     <div class="card-header">Sale Information</div>
                     <div class="card-body">
                         <table class="table">
+                            <tr th:if="${transaction.sale.saleId != null}">
+                                <th>Sale ID:</th>
+                                <td th:text="${transaction.sale.saleId}">PGESXXXXXX</td>
+                            </tr>
                             <tr>
                                 <th>Sale Date:</th>
                                 <td th:text="${#temporals.format(transaction.sale.saleDate, 'yyyy-MM-dd')}">2026-01-23</td>
@@ -104,14 +102,14 @@
                                 <th>Sale Status:</th>
                                 <td>
                                     <span class="badge" 
-                                          th:classappend="${transaction.sale.status == 'COMPLETED'} ? 'badge-success' : 
-                                                          (${transaction.sale.status == 'PARTIAL'} ? 'badge-warning' : 'badge-info')"
-                                          th:text="${transaction.sale.status}">PENDING</span>
+                                          th:classappend="${transaction.sale.paymentStatus == 'COMPLETED'} ? 'badge-success' :
+                                                          (${transaction.sale.paymentStatus == 'PARTIAL'} ? 'badge-warning' : 'badge-info')"
+                                          th:text="${transaction.sale.paymentStatus}">PENDING</span>
                                 </td>
                             </tr>
                             <tr>
                                 <th>Employee:</th>
-                                <td th:text="${transaction.sale.employee != null ? transaction.sale.employee.name : '-'}">Employee</td>
+                                <td th:text="${createdByEmployee != null ? createdByEmployee.fullName : '-'}">Employee</td>
                             </tr>
                         </table>
                     </div>

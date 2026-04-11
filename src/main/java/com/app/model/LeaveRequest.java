@@ -18,6 +18,10 @@ public class LeaveRequest {
     @JoinColumn(name = "employee_id", nullable = false)
     private Employee employee;
     
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "assigned_to_id")
+    private Employee assignedTo; // Reporting manager who needs to approve
+    
     @NotBlank(message = "Leave type is required")
     @Column(nullable = false)
     private String leaveType; // CASUAL, SICK, EARNED, MATERNITY, PATERNITY, UNPAID
@@ -76,6 +80,14 @@ public class LeaveRequest {
     
     public void setEmployee(Employee employee) {
         this.employee = employee;
+    }
+    
+    public Employee getAssignedTo() {
+        return assignedTo;
+    }
+    
+    public void setAssignedTo(Employee assignedTo) {
+        this.assignedTo = assignedTo;
     }
     
     public String getLeaveType() {

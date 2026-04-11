@@ -10,21 +10,7 @@
 </head>
 <body>
     <div class="dashboard-wrapper">
-        <!-- Top Header -->
-        <header class="top-header">
-            <div class="header-left">
-                <button class="mobile-menu-toggle" onclick="toggleMobileSidebar()" title="Toggle Sidebar">
-                    <i class="fas fa-bars"></i>
-                </button>
-                <button class="sidebar-expand-toggle" onclick="toggleSidebar()" title="Expand/Collapse Sidebar">
-                    <i class="fas fa-bars"></i>
-                </button>
-            </div>
-            <div class="company-name">Potens Green</div>
-            <form th:action="@{/logout}" method="post" style="display: inline;">
-                <button type="submit" class="logout-btn">Logout</button>
-            </form>
-        </header>
+        <div th:replace="~{fragments/employee-header :: header}"></div>
 
         <!-- Sidebar -->
         <div th:replace="~{fragments/employee-sidebar :: sidebar}"></div>
@@ -79,52 +65,6 @@
                     </div>
                 </div>
 
-                <!-- Tasks Section -->
-                <div class="card mb-4">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <span>My Tasks</span>
-                        <a th:href="@{/employee/tasks}" class="btn btn-sm btn-primary">View All</a>
-                    </div>
-                    <div class="card-body">
-                        <div th:if="${tasks != null and !tasks.isEmpty()}">
-                            <div class="table-responsive">
-                                <table class="table">
-                                    <thead>
-                                        <tr>
-                                            <th>Title</th>
-                                            <th>Status</th>
-                                            <th>Priority</th>
-                                            <th>Due Date</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr th:each="task : ${tasks}" th:if="${#lists.size(tasks) <= 5}">
-                                            <td th:text="${task.title}">Task Title</td>
-                                            <td>
-                                                <span class="badge" 
-                                                      th:classappend="${task.status == 'COMPLETED'} ? 'badge-success' : 
-                                                                      (${task.status == 'IN_PROGRESS'} ? 'badge-info' : 
-                                                                       (${task.status == 'OPEN'} ? 'badge-warning' : 'badge-secondary'))"
-                                                      th:text="${task.status}">OPEN</span>
-                                            </td>
-                                            <td>
-                                                <span class="badge" 
-                                                      th:classappend="${task.priority == 'URGENT'} ? 'badge-danger' : 
-                                                                      (${task.priority == 'HIGH'} ? 'badge-warning' : 'badge-info')"
-                                                      th:text="${task.priority}">MEDIUM</span>
-                                            </td>
-                                            <td th:text="${task.dueDate != null ? #temporals.format(task.dueDate, 'yyyy-MM-dd') : '-'}">-</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                        <div th:if="${tasks == null or tasks.isEmpty()}" class="empty-state">
-                            <p>No tasks assigned.</p>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Sales Target Section -->
                 <div class="card mb-4" th:if="${currentTarget != null}">
                     <div class="card-header">Current Sales Target</div>
@@ -158,6 +98,85 @@
                     </div>
                 </div>
 
+                <!-- Pending Approvals Section (for Managers) -->
+                <div class="card mb-4" th:if="${pendingLeaveRequests != null and (!pendingLeaveRequests.isEmpty() or (pendingClaims != null and !pendingClaims.isEmpty()))}">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-clipboard-check"></i> Pending Approvals</span>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${pendingLeaveRequests != null and !pendingLeaveRequests.isEmpty()}" class="mb-3">
+                            <h5 class="mb-3">Leave Requests (<span th:text="${#lists.size(pendingLeaveRequests)}">0</span>)</h5>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Employee</th>
+                                            <th>Leave Type</th>
+                                            <th>Start Date</th>
+                                            <th>End Date</th>
+                                            <th>Days</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="request : ${pendingLeaveRequests}">
+                                            <td th:text="${request.employee.fullName}"></td>
+                                            <td th:text="${request.leaveType}"></td>
+                                            <td th:text="${#temporals.format(request.startDate, 'yyyy-MM-dd')}"></td>
+                                            <td th:text="${#temporals.format(request.endDate, 'yyyy-MM-dd')}"></td>
+                                            <td th:text="${request.numberOfDays}"></td>
+                                            <td>
+                                                <a th:href="@{/employee/leave-requests/view/{id}(id=${request.id})}" class="btn btn-info btn-sm">
+                                                    <i class="fas fa-eye"></i> View
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="mt-2">
+                                <a th:href="@{/employee/leave-requests/pending-approvals}" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-list"></i> View All Pending Leave Requests
+                                </a>
+                            </div>
+                        </div>
+                        <div th:if="${pendingClaims != null and !pendingClaims.isEmpty()}" class="mb-3">
+                            <h5 class="mb-3">Claims (<span th:text="${#lists.size(pendingClaims)}">0</span>)</h5>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Employee</th>
+                                            <th>Claim Type</th>
+                                            <th>Date</th>
+                                            <th>Amount</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="claim : ${pendingClaims}">
+                                            <td th:text="${claim.employee.fullName}"></td>
+                                            <td th:text="${claim.claimType}"></td>
+                                            <td th:text="${#temporals.format(claim.claimDate, 'yyyy-MM-dd')}"></td>
+                                            <td th:text="${'₹' + #numbers.formatDecimal(claim.amount, 0, 'COMMA', 2, 'POINT')}"></td>
+                                            <td>
+                                                <a th:href="@{/employee/claims/view/{id}(id=${claim.id})}" class="btn btn-info btn-sm">
+                                                    <i class="fas fa-eye"></i> View
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="mt-2">
+                                <a th:href="@{/employee/claims/pending-approvals}" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-list"></i> View All Pending Claims
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Recent Sales Section -->
                 <div class="card mb-4">
                     <div class="card-header">Recent Sales (Last 30 Days)</div>
@@ -182,9 +201,10 @@
                                             <td th:text="${'$' + #numbers.formatDecimal(sale.totalAmount, 0, 'COMMA', 2, 'POINT')}">$0.00</td>
                                             <td>
                                                 <span class="badge" 
-                                                      th:classappend="${sale.status == 'COMPLETED'} ? 'badge-success' : 
-                                                                      (${sale.status == 'PENDING'} ? 'badge-warning' : 'badge-danger')"
-                                                      th:text="${sale.status}">PENDING</span>
+                                                      th:classappend="${sale.paymentStatus == 'COMPLETED'} ? 'badge-success' :
+                                                                      (${sale.paymentStatus == 'PARTIAL'} ? 'badge-warning' :
+                                                                      (${sale.paymentStatus == 'PENDING'} ? 'badge-info' : 'badge-danger'))"
+                                                      th:text="${sale.paymentStatus}">PENDING</span>
                                             </td>
                                         </tr>
                                     </tbody>

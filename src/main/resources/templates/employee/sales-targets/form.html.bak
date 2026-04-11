@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Set Sales Target - Employee Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        <header class="top-header">
+            <div class="header-left">
+                <button class="mobile-menu-toggle" onclick="toggleMobileSidebar()" title="Toggle Sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <button class="sidebar-expand-toggle" onclick="toggleSidebar()" title="Expand/Collapse Sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <div class="company-name">Potens Green</div>
+            <form th:action="@{/logout}" method="post" style="display: inline;">
+                <button type="submit" class="logout-btn">Logout</button>
+            </form>
+        </header>
+        <div th:replace="~{fragments/employee-sidebar :: sidebar}"></div>
+        <main class="main-content">
+            <div class="container">
+        <div th:if="${message}" class="alert alert-success">
+            <span th:text="${message}"></span>
+        </div>
+        <div th:if="${error}" class="alert alert-danger">
+            <span th:text="${error}"></span>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-bullseye"></i> Set Sales Target</h1>
+            <a th:href="@{/employee/sales-targets}" class="btn btn-secondary">Back to List</a>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card mb-4">
+                    <div class="card-header">Employee Information</div>
+                    <div class="card-body">
+                        <table class="table">
+                            <tr>
+                                <th>Employee:</th>
+                                <td><strong th:text="${targetEmployee.fullName + ' (' + targetEmployee.username + ')'}">Employee Name</strong></td>
+                            </tr>
+                            <tr>
+                                <th>Hierarchy Level:</th>
+                                <td><span class="badge badge-info" th:text="${targetEmployee.hierarchyLevel}">Level</span></td>
+                            </tr>
+                            <tr>
+                                <th>Email:</th>
+                                <td th:text="${targetEmployee.email}">Email</td>
+                            </tr>
+                            <tr>
+                                <th>Phone:</th>
+                                <td th:text="${targetEmployee.phone}">Phone</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">Sales Target Details</div>
+                    <div class="card-body">
+                        <form th:action="@{/employee/sales-targets/save}" method="post">
+                            <input type="hidden" name="employeeId" th:value="${targetEmployee.id}">
+                            
+                            <div class="form-group mb-3">
+                                <label class="form-label">Product *</label>
+                                <select class="form-select" name="productId" required id="productId" onchange="updateMaxTarget()">
+                                    <option value="">Select Product</option>
+                                    <option th:each="product : ${products}" 
+                                            th:value="${product.id}" 
+                                            th:text="${product.name + ' (' + product.productId + ')'}">Product</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label class="form-label">Target Units (Quantity) *</label>
+                                <input type="number" class="form-control" name="targetUnits" 
+                                       min="0" 
+                                       id="targetUnits"
+                                       required 
+                                       placeholder="Enter target units"
+                                       onchange="calculateAmount()">
+                                <small class="text-muted">Minimum: 0 units</small>
+                                <small class="text-muted d-block" id="maxTargetInfo"></small>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group mb-3">
+                                        <label class="form-label">Period Start *</label>
+                                        <input type="date" class="form-control" name="periodStart" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group mb-3">
+                                        <label class="form-label">Period End *</label>
+                                        <input type="date" class="form-control" name="periodEnd" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i> 
+                                <strong>Note:</strong> 
+                                <ul class="mb-0 mt-2">
+                                    <li>Target units must be at least 0</li>
+                                    <li>The target amount will be automatically calculated from units × product unit price</li>
+                                    <li>If you have a target for this product in the same period, the employee's target units cannot exceed yours</li>
+                                    <li>If a target already exists for this product and period, it will be updated</li>
+                                </ul>
+                            </div>
+
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Save Target
+                                </button>
+                                <a th:href="@{/employee/sales-targets}" class="btn btn-secondary">Cancel</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <i class="fas fa-info-circle"></i> Your Targets (Reference)
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">Your sales targets for reference. Employee targets cannot exceed yours for the same product and period.</p>
+                        <div th:if="${managerTargets != null and !managerTargets.isEmpty()}">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Units</th>
+                                        <th>Amount</th>
+                                        <th>Period</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="target : ${managerTargets}">
+                                        <td th:text="${target.product != null ? target.product.name : 'General'}">Product</td>
+                                        <td><strong th:text="${target.targetUnits != null ? target.targetUnits : '-'}">-</strong> units</td>
+                                        <td>₹<span th:text="${#numbers.formatDecimal(target.targetAmount, 0, 'COMMA', 2, 'POINT')}">0.00</span></td>
+                                        <td>
+                                            <small th:text="${#temporals.format(target.periodStart, 'MM/dd') + ' - ' + #temporals.format(target.periodEnd, 'MM/dd')}">Period</small>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div th:if="${managerTargets == null or managerTargets.isEmpty()}" class="text-muted">
+                            <p>No targets set for you yet.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+            </div>
+        </main>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/sidebar.js}"></script>
+    <script>
+        // Store products with their unit prices
+        const products = {
+            <th:block th:each="product : ${products}">
+            '<span th:text="${product.id}">1</span>': {
+                name: '<span th:text="${product.name}">Product</span>',
+                unitPrice: <span th:text="${product.unitPrice}">0</span>
+            }<th:block th:unless="${productStat.last}">,</th:block>
+            </th:block>
+        };
+        
+        // Store manager targets for validation
+        const managerTargetsData = [
+            <th:block th:each="target : ${managerTargets}" th:if="${target.product != null}">
+            {
+                productId: <span th:text="${target.product.id}">null</span>,
+                targetUnits: <span th:text="${target.targetUnits != null ? target.targetUnits : 'null'}">null</span>,
+                targetAmount: <span th:text="${target.targetAmount}">0</span>,
+                periodStart: '<span th:text="${#temporals.format(target.periodStart, 'yyyy-MM-dd')}">2026-01-01</span>',
+                periodEnd: '<span th:text="${#temporals.format(target.periodEnd, 'yyyy-MM-dd')}">2026-01-31</span>'
+            }<th:block th:unless="${targetStat.last}">,</th:block>
+            </th:block>
+        ];
+        
+        
+        function updateMaxTarget() {
+            const productId = document.getElementById('productId').value;
+            const periodStart = document.querySelector('input[name="periodStart"]').value;
+            const periodEnd = document.querySelector('input[name="periodEnd"]').value;
+            const maxTargetInfo = document.getElementById('maxTargetInfo');
+            const targetUnitsInput = document.getElementById('targetUnits');
+            
+            if (!productId || !periodStart || !periodEnd) {
+                maxTargetInfo.textContent = '';
+                targetUnitsInput.removeAttribute('max');
+                return;
+            }
+            
+            // Find matching manager target
+            const matchingTarget = managerTargetsData.find(t => {
+                if (String(t.productId) !== String(productId)) return false;
+                const targetStart = new Date(t.periodStart);
+                const targetEnd = new Date(t.periodEnd);
+                const periodStartDate = new Date(periodStart);
+                const periodEndDate = new Date(periodEnd);
+                return !(targetStart > periodEndDate || targetEnd < periodStartDate);
+            });
+            
+            if (matchingTarget && matchingTarget.targetUnits != null) {
+                maxTargetInfo.textContent = 'Maximum: ' + matchingTarget.targetUnits + ' units';
+                targetUnitsInput.setAttribute('max', matchingTarget.targetUnits);
+            } else {
+                maxTargetInfo.textContent = '';
+                targetUnitsInput.removeAttribute('max');
+            }
+        }
+        
+        // Update when product or dates change
+        document.getElementById('productId').addEventListener('change', function() {
+            updateMaxTarget();
+        });
+        document.querySelector('input[name="periodStart"]').addEventListener('change', updateMaxTarget);
+        document.querySelector('input[name="periodEnd"]').addEventListener('change', updateMaxTarget);
+        
+        // Validate form submission
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const targetUnits = parseInt(document.getElementById('targetUnits').value);
+            const maxUnits = document.getElementById('targetUnits').getAttribute('max');
+            
+            if (maxUnits && targetUnits > parseInt(maxUnits)) {
+                e.preventDefault();
+                alert('Target units cannot exceed your target for this product: ' + maxUnits + ' units');
+                return false;
+            }
+        });
+    </script>
+</body>
+</html>

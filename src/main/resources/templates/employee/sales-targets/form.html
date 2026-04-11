@@ -10,20 +10,7 @@
 </head>
 <body>
     <div class="dashboard-wrapper">
-        <header class="top-header">
-            <div class="header-left">
-                <button class="mobile-menu-toggle" onclick="toggleMobileSidebar()" title="Toggle Sidebar">
-                    <i class="fas fa-bars"></i>
-                </button>
-                <button class="sidebar-expand-toggle" onclick="toggleSidebar()" title="Expand/Collapse Sidebar">
-                    <i class="fas fa-bars"></i>
-                </button>
-            </div>
-            <div class="company-name">Potens Green</div>
-            <form th:action="@{/logout}" method="post" style="display: inline;">
-                <button type="submit" class="logout-btn">Logout</button>
-            </form>
-        </header>
+                <div th:replace="~{fragments/employee-header :: header}"></div>
         <div th:replace="~{fragments/employee-sidebar :: sidebar}"></div>
         <main class="main-content">
             <div class="container">
@@ -93,30 +80,17 @@
                                 <small class="text-muted d-block" id="maxTargetInfo"></small>
                             </div>
 
-                            <div class="form-group mb-3">
-                                <label class="form-label">Calculated Target Amount (₹)</label>
-                                <input type="text" class="form-control" 
-                                       id="calculatedAmount"
-                                       readonly 
-                                       placeholder="Will be calculated automatically">
-                                <small class="text-muted">Amount = Units × Product Unit Price</small>
-                            </div>
-
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group mb-3">
                                         <label class="form-label">Period Start *</label>
-                                        <input type="date" class="form-control" name="periodStart" 
-                                               th:min="${#temporals.format(#temporals.createToday(), 'yyyy-MM-dd')}"
-                                               required>
+                                        <input type="date" class="form-control" name="periodStart" required>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group mb-3">
                                         <label class="form-label">Period End *</label>
-                                        <input type="date" class="form-control" name="periodEnd" 
-                                               th:min="${#temporals.format(#temporals.createToday(), 'yyyy-MM-dd')}"
-                                               required>
+                                        <input type="date" class="form-control" name="periodEnd" required>
                                     </div>
                                 </div>
                             </div>
@@ -126,7 +100,7 @@
                                 <strong>Note:</strong> 
                                 <ul class="mb-0 mt-2">
                                     <li>Target units must be at least 0</li>
-                                    <li>Target amount is automatically calculated from units × product unit price</li>
+                                    <li>The target amount will be automatically calculated from units × product unit price</li>
                                     <li>If you have a target for this product in the same period, the employee's target units cannot exceed yours</li>
                                     <li>If a target already exists for this product and period, it will be updated</li>
                                 </ul>
@@ -208,20 +182,6 @@
             </th:block>
         ];
         
-        function calculateAmount() {
-            const productId = document.getElementById('productId').value;
-            const targetUnits = parseInt(document.getElementById('targetUnits').value) || 0;
-            const calculatedAmountInput = document.getElementById('calculatedAmount');
-            
-            if (productId && products[productId]) {
-                const unitPrice = products[productId].unitPrice;
-                const calculatedAmount = targetUnits * unitPrice;
-                calculatedAmountInput.value = '₹' + calculatedAmount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-            } else {
-                calculatedAmountInput.value = '';
-            }
-            updateMaxTarget();
-        }
         
         function updateMaxTarget() {
             const productId = document.getElementById('productId').value;
@@ -257,7 +217,6 @@
         
         // Update when product or dates change
         document.getElementById('productId').addEventListener('change', function() {
-            calculateAmount();
             updateMaxTarget();
         });
         document.querySelector('input[name="periodStart"]').addEventListener('change', updateMaxTarget);

@@ -10,21 +10,7 @@
 </head>
 <body>
     <div class="dashboard-wrapper">
-        <!-- Top Header -->
-        <header class="top-header">
-            <div class="header-left">
-                <button class="mobile-menu-toggle" onclick="toggleSidebar(); return false;" title="Toggle Sidebar">
-                    <i class="fas fa-bars"></i>
-                </button>
-                <button class="sidebar-expand-toggle" onclick="toggleSidebar(); return false;" title="Expand/Collapse Sidebar">
-                    <i class="fas fa-bars"></i>
-                </button>
-            </div>
-            <div class="company-name">Potens Green</div>
-            <form th:action="@{/logout}" method="post" style="display: inline;">
-                <button type="submit" class="logout-btn">Logout</button>
-            </form>
-        </header>
+        <div th:replace="~{fragments/admin-header :: header}"></div>
 
         <!-- Sidebar -->
         <div th:replace="~{fragments/admin-sidebar :: sidebar}"></div>
@@ -179,13 +165,14 @@
                             <td th:text="${#temporals.format(sale.saleDate, 'yyyy-MM-dd')}"></td>
                             <td th:text="${sale.customer.contactPerson}"></td>
                             <td th:text="${sale.productName}"></td>
-                            <td th:text="${sale.employee.fullName}"></td>
+                            <td th:text="${sale.createdByEmployee != null ? sale.createdByEmployee.fullName : 'Unknown'}"></td>
                             <td>₹<span th:text="${#numbers.formatDecimal(sale.totalAmount, 0, 'COMMA', 2, 'POINT')}">0.00</span></td>
                             <td>
-                                <span th:switch="${sale.status}">
-                                    <span class="badge bg-success" th:case="'COMPLETED'" th:text="${sale.status}">COMPLETED</span>
-                                    <span class="badge bg-warning" th:case="'PENDING'" th:text="${sale.status}">PENDING</span>
-                                    <span class="badge bg-danger" th:case="*" th:text="${sale.status}">OTHER</span>
+                                <span th:switch="${sale.paymentStatus}">
+                                    <span class="badge bg-success" th:case="'COMPLETED'" th:text="${sale.paymentStatus}">COMPLETED</span>
+                                    <span class="badge bg-warning" th:case="'PARTIAL'" th:text="${sale.paymentStatus}">PARTIAL</span>
+                                    <span class="badge bg-info" th:case="'PENDING'" th:text="${sale.paymentStatus}">PENDING</span>
+                                    <span class="badge bg-danger" th:case="*" th:text="${sale.paymentStatus}">OTHER</span>
                                 </span>
                             </td>
                         </tr>

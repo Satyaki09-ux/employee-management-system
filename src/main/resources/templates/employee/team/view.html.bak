@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${'View ' + employeeTypeLabel + ' - Employee Management System'}">View Team Member - Employee Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        <header class="top-header">
+            <div class="header-left">
+                <button class="mobile-menu-toggle" onclick="toggleMobileSidebar()" title="Toggle Sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <button class="sidebar-expand-toggle" onclick="toggleSidebar()" title="Expand/Collapse Sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <div class="company-name">Potens Green</div>
+            <form th:action="@{/logout}" method="post" style="display: inline;">
+                <button type="submit" class="logout-btn">Logout</button>
+            </form>
+        </header>
+
+        <div th:replace="~{fragments/employee-sidebar :: sidebar}"></div>
+
+        <main class="main-content">
+            <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 th:text="${employeeTypeLabel + ' Details'}">Team Member Details</h1>
+            <div>
+                <a th:href="${baseUrl + '/edit/' + employee.id}" class="btn btn-warning">Edit</a>
+                <a th:href="${listUrl}" class="btn btn-secondary">Back to List</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Personal Information</h5>
+                        <table class="table">
+                            <tr>
+                                <th>Employee ID:</th>
+                                <td><strong th:text="${employee.username != null ? employee.username : 'N/A'}">N/A</strong></td>
+                            </tr>
+                            <tr>
+                                <th>Name:</th>
+                                <td th:text="${employee.fullName}"></td>
+                            </tr>
+                            <tr>
+                                <th>Email:</th>
+                                <td th:text="${employee.email}"></td>
+                            </tr>
+                            <tr>
+                                <th>Phone:</th>
+                                <td th:text="${employee.phone}"></td>
+                            </tr>
+                            <tr>
+                                <th>Status:</th>
+                                <td>
+                                    <span class="badge" 
+                                          th:classappend="${employee.status == 'ACTIVE'} ? 'badge-success' : 'badge-danger'"
+                                          th:text="${employee.status}">ACTIVE</span>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Employment Information</h5>
+                        <table class="table">
+                            <tr>
+                                <th>Hierarchy Level:</th>
+                                <td>
+                                    <span class="badge badge-info" th:text="${employee.hierarchyLevel}">Hierarchy</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Position:</th>
+                                <td th:text="${employee.position != null ? employee.position : employee.hierarchyLevel}"></td>
+                            </tr>
+                            <tr th:if="${employee.department != null}">
+                                <th>Department:</th>
+                                <td th:text="${employee.department}"></td>
+                            </tr>
+                            <tr>
+                                <th>Reporting Manager:</th>
+                                <td th:text="${employee.reportingManager != null ? employee.reportingManager.fullName + ' (' + employee.reportingManager.hierarchyLevel + ')' : 'None'}">None</td>
+                            </tr>
+                            <tr>
+                                <th>Hire Date:</th>
+                                <td th:text="${#temporals.format(employee.hireDate, 'yyyy-MM-dd')}"></td>
+                            </tr>
+                            <tr th:if="${employee.salary != null}">
+                                <th>Salary:</th>
+                                <td th:text="${'$' + #numbers.formatDecimal(employee.salary, 0, 'COMMA', 2, 'POINT')}"></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-md-12">
+                        <h5>Location Information</h5>
+                        <table class="table">
+                            <tr>
+                                <th>State:</th>
+                                <td th:text="${employee.state}"></td>
+                            </tr>
+                            <tr>
+                                <th>City:</th>
+                                <td th:text="${employee.city}"></td>
+                            </tr>
+                            <tr>
+                                <th>Area:</th>
+                                <td th:text="${employee.area}"></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-md-12">
+                        <h5>Audit Information</h5>
+                        <table class="table">
+                            <tr>
+                                <th>Added by:</th>
+                                <td th:text="${createdByDisplay}">—</td>
+                            </tr>
+                            <tr>
+                                <th>Added on:</th>
+                                <td th:text="${employee.createdAt != null ? #temporals.format(employee.createdAt, 'yyyy-MM-dd HH:mm') : '—'}">—</td>
+                            </tr>
+                            <tr>
+                                <th>Last updated by:</th>
+                                <td th:text="${lastUpdatedByDisplay}">—</td>
+                            </tr>
+                            <tr>
+                                <th>Last updated on:</th>
+                                <td th:text="${employee.updatedAt != null ? #temporals.format(employee.updatedAt, 'yyyy-MM-dd HH:mm') : '—'}">—</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/sidebar.js}"></script>
+</body>
+</html>

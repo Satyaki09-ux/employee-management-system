@@ -89,7 +89,7 @@ public class SalaryController {
             if (resource.exists() && resource.isReadable()) {
                 String contentType = "application/pdf";
                 String fileName = "payslip_" + employee.getUsername() + "_" + 
-                    salary.getSalaryMonth().format(DateTimeFormatter.ofPattern("yyyy-MM")) + ".pdf";
+                    salary.getStartDate().format(DateTimeFormatter.ofPattern("yyyy-MM")) + ".pdf";
                 
                 return ResponseEntity.ok()
                         .contentType(MediaType.parseMediaType(contentType))

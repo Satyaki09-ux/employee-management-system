@@ -3,6 +3,7 @@ package com.app.admin.controller;
 import com.app.model.Sale;
 import com.app.model.Employee;
 import com.app.model.Customer;
+import com.app.model.Payment;
 import com.app.service.SaleService;
 import com.app.service.EmployeeService;
 import com.app.service.CustomerService;
@@ -15,6 +16,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -42,7 +44,7 @@ public class SaleController {
         if (employeeId != null && startDate != null && endDate != null) {
             sales = saleService.getSalesByDateRange(startDate, endDate)
                     .stream()
-                    .filter(s -> s.getEmployee().getId().equals(employeeId))
+                    .filter(s -> s.getCreatedById().equals(employeeId))
                     .toList();
             model.addAttribute("selectedEmployeeId", employeeId);
         } else if (employeeId != null) {
@@ -73,16 +75,6 @@ public class SaleController {
         return "admin/sales/form";
     }
     
-    @GetMapping("/edit/{id}")
-    public String editSale(@PathVariable Long id, Model model) {
-        Sale sale = saleService.getSaleById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid sale ID: " + id));
-        model.addAttribute("sale", sale);
-        model.addAttribute("employees", employeeService.getActiveEmployees());
-        model.addAttribute("customers", customerService.getActiveCustomers());
-        return "admin/sales/form";
-    }
-    
     @PostMapping("/save")
     public String saveSale(@Valid @ModelAttribute Sale sale,
                           @RequestParam(required = false) Long employeeId,
@@ -93,7 +85,9 @@ public class SaleController {
         if (employeeId != null) {
             Employee employee = employeeService.getEmployeeById(employeeId)
                     .orElseThrow(() -> new IllegalArgumentException("Invalid employee ID: " + employeeId));
-            sale.setEmployee(employee);
+            sale.setCreatedById(employee.getId());
+            // Set hierarchy fields based on employee hierarchy
+            employeeService.setSaleHierarchyFields(sale, employee);
         }
         
         if (customerId != null) {
@@ -113,18 +107,31 @@ public class SaleController {
         return "redirect:/sales";
     }
     
-    @GetMapping("/delete/{id}")
-    public String deleteSale(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        saleService.deleteSale(id);
-        redirectAttributes.addFlashAttribute("message", "Sale deleted successfully!");
-        return "redirect:/sales";
-    }
-    
     @GetMapping("/view/{id}")
     public String viewSale(@PathVariable Long id, Model model) {
         Sale sale = saleService.getSaleById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid sale ID: " + id));
+
+        // Get all payments/transactions for this sale
+        List<Payment> transactions = saleService.getPaymentsBySale(sale.getId());
+
+        // Calculate payment summary
+        BigDecimal paidAmount = transactions.stream()
+                .map(Payment::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal remainingAmount = sale.getTotalAmount().subtract(paidAmount);
+
+        // Get the employee who created this sale
+        Employee createdByEmployee = employeeService.getEmployeeById(sale.getCreatedById())
+                .orElse(null);
+
         model.addAttribute("sale", sale);
+        model.addAttribute("transactions", transactions);
+        model.addAttribute("createdByEmployee", createdByEmployee);
+        model.addAttribute("paidAmount", paidAmount);
+        model.addAttribute("remainingAmount", remainingAmount);
+
         return "admin/sales/view";
     }
 }

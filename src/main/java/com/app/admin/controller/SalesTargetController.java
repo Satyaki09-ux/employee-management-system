@@ -155,36 +155,6 @@ public class SalesTargetController {
         return "redirect:/admin/sales-targets";
     }
     
-    @PostMapping("/calculate-salary/{id}")
-    public String calculateSalary(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        try {
-            SalesTarget salesTarget = salesTargetService.getSalesTargetById(id)
-                    .orElseThrow(() -> new IllegalArgumentException("Invalid sales target ID: " + id));
-            
-            // Update achieved amount first
-            salesTargetService.updateAchievedAmount(salesTarget);
-            
-            // Calculate and update salary
-            salesTargetService.calculateAndUpdateSalary(salesTarget);
-            
-            redirectAttributes.addFlashAttribute("message", "Salary calculated and updated successfully!");
-            return "redirect:/admin/sales-targets/view/" + salesTarget.getEmployee().getId();
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error calculating salary: " + e.getMessage());
-            return "redirect:/admin/sales-targets";
-        }
-    }
-    
-    @PostMapping("/calculate-all-salaries")
-    public String calculateAllSalaries(RedirectAttributes redirectAttributes) {
-        try {
-            salesTargetService.recalculateAllSalaries();
-            redirectAttributes.addFlashAttribute("message", "All salaries calculated successfully!");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error calculating salaries: " + e.getMessage());
-        }
-        return "redirect:/admin/sales-targets";
-    }
     
     @GetMapping("/view/{id}")
     public String viewEmployeeTargets(@PathVariable Long id, Model model) {

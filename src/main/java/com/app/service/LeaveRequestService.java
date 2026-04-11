@@ -29,7 +29,7 @@ public class LeaveRequestService {
     }
     
     public List<LeaveRequest> getPendingLeaveRequestsForManager(Employee manager) {
-        return leaveRequestRepository.findByApprovedByAndStatus(manager, "PENDING");
+        return leaveRequestRepository.findByAssignedToAndStatus(manager, "PENDING");
     }
     
     public LeaveRequest saveLeaveRequest(LeaveRequest leaveRequest) {
@@ -38,6 +38,13 @@ public class LeaveRequestService {
             long days = ChronoUnit.DAYS.between(leaveRequest.getStartDate(), leaveRequest.getEndDate()) + 1;
             leaveRequest.setNumberOfDays((int) days);
         }
+        
+        // Assign to reporting manager if not already assigned
+        if (leaveRequest.getAssignedTo() == null && leaveRequest.getEmployee() != null 
+                && leaveRequest.getEmployee().getReportingManager() != null) {
+            leaveRequest.setAssignedTo(leaveRequest.getEmployee().getReportingManager());
+        }
+        
         return leaveRequestRepository.save(leaveRequest);
     }
     

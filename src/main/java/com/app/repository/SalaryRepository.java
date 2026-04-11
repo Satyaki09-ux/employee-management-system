@@ -12,7 +12,6 @@ import java.util.Optional;
 @Repository
 public interface SalaryRepository extends JpaRepository<Salary, Long> {
     List<Salary> findByEmployee(Employee employee);
-    List<Salary> findByEmployeeOrderBySalaryMonthDesc(Employee employee);
-    Optional<Salary> findByEmployeeAndSalaryMonth(Employee employee, LocalDate salaryMonth);
+    List<Salary> findByEmployeeOrderByStartDateDesc(Employee employee);
     List<Salary> findByEmployeeAndStatus(Employee employee, String status);
 }

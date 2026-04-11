@@ -10,20 +10,7 @@
 </head>
 <body>
     <div class="dashboard-wrapper">
-        <header class="top-header">
-            <div class="header-left">
-                <button class="mobile-menu-toggle" onclick="toggleMobileSidebar()" title="Toggle Sidebar">
-                    <i class="fas fa-bars"></i>
-                </button>
-                <button class="sidebar-expand-toggle" onclick="toggleSidebar()" title="Expand/Collapse Sidebar">
-                    <i class="fas fa-bars"></i>
-                </button>
-            </div>
-            <div class="company-name">Potens Green</div>
-            <form th:action="@{/logout}" method="post" style="display: inline;">
-                <button type="submit" class="logout-btn">Logout</button>
-            </form>
-        </header>
+        <div th:replace="~{fragments/admin-header :: header}"></div>
         <div th:replace="~{fragments/admin-sidebar :: sidebar}"></div>
         <main class="main-content">
             <div class="container">
@@ -36,7 +23,7 @@
 
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1>Attendance</h1>
-            <a th:href="@{/attendances/new}" class="btn btn-primary">Add Attendance</a>
+            <a th:href="@{/admin/attendances/new}" class="btn btn-primary">Add Attendance</a>
         </div>
 
         <div class="card mb-4">
@@ -95,12 +82,9 @@
                             <td th:text="${attendance.workingHours != null ? attendance.workingHours + ' hrs' : '-'}"></td>
                             <td th:text="${attendance.notes != null ? attendance.notes : '-'}"></td>
                             <td>
-                                <div class="action-buttons">
-                                    <a th:href="@{/attendances/edit/{id}(id=${attendance.id})}" class="btn btn-warning btn-sm">Edit</a>
-                                    <a th:href="@{/attendances/delete/{id}(id=${attendance.id})}" 
-                                       class="btn btn-danger btn-sm"
-                                       onclick="return confirm('Are you sure?')">Delete</a>
-                                </div>
+                                <a th:href="@{/admin/attendances/edit/{id}(id=${attendance.id})}" class="btn btn-warning btn-sm">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
                             </td>
                         </tr>
                     </tbody>

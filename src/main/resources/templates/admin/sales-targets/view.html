@@ -9,24 +9,11 @@
     <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg">
-        <div class="container">
-            <a class="navbar-brand" th:href="@{/}">Employee Management</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" th:href="@{/}">Dashboard</a></li>
-                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/employees}">Employees</a></li>
-                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/sales-targets}">Sales Targets</a></li>
-                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/sales}">Sales</a></li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-
-    <div class="container">
+    <div class="dashboard-wrapper">
+        <div th:replace="~{fragments/admin-header :: header}"></div>
+        <div th:replace="~{fragments/admin-sidebar :: sidebar}"></div>
+        <main class="main-content">
+            <div class="container">
         <div th:if="${message}" class="alert alert-success">
             <span th:text="${message}"></span>
         </div>
@@ -87,11 +74,8 @@
                                 <th>Achieved Amount</th>
                                 <th>Remaining</th>
                                 <th>Progress</th>
-                                <th>Base Salary</th>
                                 <th>Commission Rate</th>
-                                <th>Calculated Salary</th>
                                 <th>Status</th>
-                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -107,7 +91,7 @@
                                 <td class="text-danger">₹<span th:text="${#numbers.formatDecimal(target.targetAmount.subtract(target.achievedAmount), 0, 'COMMA', 2, 'POINT')}">0.00</span></td>
                                 <td>
                                     <div class="progress" style="height: 20px;">
-                                        <div class="progress-bar" role="progressbar" 
+                                        <div class="progress-bar" role="progressbar"
                                              th:classappend="${target.progressPercentage.intValue() >= 100} ? 'bg-success' : 'bg-warning'"
                                              th:style="${'width: ' + (target.progressPercentage.intValue() > 100 ? 100 : target.progressPercentage.intValue()) + '%'}"
                                              th:attr="aria-valuenow=${target.progressPercentage.intValue()}"
@@ -116,28 +100,11 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td>₹<span th:text="${target.baseSalary != null ? #numbers.formatDecimal(target.baseSalary, 0, 'COMMA', 2, 'POINT') : 'N/A'}">N/A</span></td>
                                 <td th:text="${target.commissionRate != null ? target.commissionRate + '%' : 'N/A'}">N/A</td>
                                 <td>
-                                    <strong th:if="${target.calculatedSalary != null}" 
-                                            th:text="${'₹' + #numbers.formatDecimal(target.calculatedSalary, 0, 'COMMA', 2, 'POINT')}">₹0.00</strong>
-                                    <span th:if="${target.calculatedSalary == null}" class="text-muted">Not Calculated</span>
-                                </td>
-                                <td>
-                                    <span class="badge" 
+                                    <span class="badge"
                                           th:classappend="${target.progressPercentage.intValue() >= 100} ? 'badge-success' : 'badge-warning'"
                                           th:text="${target.progressPercentage.intValue() >= 100 ? 'Achieved' : 'In Progress'}">In Progress</span>
-                                    <br>
-                                    <small th:if="${target.salaryCalculated == true}" class="text-success">Salary Calculated</small>
-                                </td>
-                                <td>
-                                    <div class="action-buttons">
-                                        <form th:action="@{/admin/sales-targets/calculate-salary/{id}(id=${target.id})}" method="post" style="display: inline;">
-                                            <button type="submit" class="btn btn-success btn-sm" th:disabled="${target.salaryCalculated == true}">
-                                                <i class="fas fa-calculator"></i> Calculate Salary
-                                            </button>
-                                        </form>
-                                    </div>
                                 </td>
                             </tr>
                         </tbody>
@@ -150,9 +117,10 @@
                     </a>
                 </div>
             </div>
-        </div>
+            </div>
+        </main>
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/sidebar.js}"></script>
 </body>
 </html>

@@ -2,7 +2,6 @@ package com.app.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -15,11 +14,31 @@ public class Sale {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    /** Unique 10-char sale ID: PGES + 6 alphanumeric (e.g. PGESA1B2C3) */
+    @Column(name = "sale_id", unique = true, length = 10)
+    private String saleId;
     
-    @NotNull(message = "Employee is required")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "employee_id", nullable = false)
-    private Employee employee;
+    @NotNull(message = "Created by is required")
+    @Column(name = "created_by_id", nullable = false)
+    private Long createdById;
+
+    // Employee hierarchy for commission tracking (optional)
+    @Column(name = "promoter_id")
+    private Long promoterId;
+
+    @Column(name = "zonal_head_id")
+    private Long zonalHeadId;
+
+    @Column(name = "cluster_head_id")
+    private Long clusterHeadId;
+
+    @Column(name = "asm_id")
+    private Long asmId;
+
+    // Transient field for display purposes
+    @Transient
+    private Employee createdByEmployee;
     
     @NotNull(message = "Customer is required")
     @ManyToOne(fetch = FetchType.LAZY)
@@ -43,9 +62,6 @@ public class Sale {
     @OneToMany(mappedBy = "sale", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private java.util.List<Payment> payments;
     
-    @Column(precision = 10, scale = 2)
-    private BigDecimal commissionAmount;
-    
     @Column(name = "due_date")
     private java.time.LocalDate dueDate;
     
@@ -64,7 +80,10 @@ public class Sale {
     private BigDecimal totalAmount;
     
     @Column(nullable = false)
-    private String status = "PENDING"; // PENDING, COMPLETED, CANCELLED
+    private String paymentStatus = "PENDING"; // PENDING, PARTIAL, COMPLETED
+
+    @Column(name = "status", nullable = false)
+    private String saleStatus = "IN_PROGRESS"; // IN_PROGRESS, COMPLETED, CANCELLED
     
     @Column(length = 500)
     private String notes;
@@ -75,6 +94,16 @@ public class Sale {
     @Column(nullable = false)
     private LocalDateTime updatedAt = LocalDateTime.now();
     
+    public Sale() {
+        // Ensure default values are set when object is created
+        if (this.saleStatus == null || this.saleStatus.isEmpty()) {
+            this.saleStatus = "IN_PROGRESS";
+        }
+        if (this.paymentStatus == null || this.paymentStatus.isEmpty()) {
+            this.paymentStatus = "PENDING";
+        }
+    }
+
     @PrePersist
     protected void onPersist() {
         if (unitPrice != null && quantity != null) {
@@ -83,6 +112,14 @@ public class Sale {
         // Ensure productName is set
         if ((productName == null || productName.isEmpty()) && product != null && product.getName() != null) {
             productName = product.getName();
+        }
+        // Ensure saleStatus is set
+        if (saleStatus == null || saleStatus.isEmpty()) {
+            saleStatus = "IN_PROGRESS";
+        }
+        // Ensure paymentStatus is set
+        if (paymentStatus == null || paymentStatus.isEmpty()) {
+            paymentStatus = "PENDING";
         }
     }
     
@@ -106,13 +143,61 @@ public class Sale {
     public void setId(Long id) {
         this.id = id;
     }
-    
-    public Employee getEmployee() {
-        return employee;
+
+    public String getSaleId() {
+        return saleId;
+    }
+
+    public void setSaleId(String saleId) {
+        this.saleId = saleId;
     }
     
-    public void setEmployee(Employee employee) {
-        this.employee = employee;
+    public Long getCreatedById() {
+        return createdById;
+    }
+
+    public void setCreatedById(Long createdById) {
+        this.createdById = createdById;
+    }
+
+    public Long getPromoterId() {
+        return promoterId;
+    }
+
+    public void setPromoterId(Long promoterId) {
+        this.promoterId = promoterId;
+    }
+
+    public Long getZonalHeadId() {
+        return zonalHeadId;
+    }
+
+    public void setZonalHeadId(Long zonalHeadId) {
+        this.zonalHeadId = zonalHeadId;
+    }
+
+    public Long getClusterHeadId() {
+        return clusterHeadId;
+    }
+
+    public void setClusterHeadId(Long clusterHeadId) {
+        this.clusterHeadId = clusterHeadId;
+    }
+
+    public Long getAsmId() {
+        return asmId;
+    }
+
+    public void setAsmId(Long asmId) {
+        this.asmId = asmId;
+    }
+
+    public Employee getCreatedByEmployee() {
+        return createdByEmployee;
+    }
+
+    public void setCreatedByEmployee(Employee createdByEmployee) {
+        this.createdByEmployee = createdByEmployee;
     }
     
     public Customer getCustomer() {
@@ -158,12 +243,20 @@ public class Sale {
         this.payments = payments;
     }
     
-    public BigDecimal getCommissionAmount() {
-        return commissionAmount;
+    public String getPaymentStatus() {
+        return paymentStatus;
     }
-    
-    public void setCommissionAmount(BigDecimal commissionAmount) {
-        this.commissionAmount = commissionAmount;
+
+    public void setPaymentStatus(String paymentStatus) {
+        this.paymentStatus = paymentStatus;
+    }
+
+    public String getSaleStatus() {
+        return saleStatus;
+    }
+
+    public void setSaleStatus(String saleStatus) {
+        this.saleStatus = saleStatus;
     }
     
     /**
@@ -252,12 +345,14 @@ public class Sale {
         this.totalAmount = totalAmount;
     }
     
+    // Legacy method for backward compatibility - maps to saleStatus
     public String getStatus() {
-        return status;
+        return saleStatus;
     }
-    
+
+    // Legacy method for backward compatibility - maps to saleStatus
     public void setStatus(String status) {
-        this.status = status;
+        this.saleStatus = status;
     }
     
     public String getNotes() {

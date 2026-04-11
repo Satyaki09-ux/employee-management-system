@@ -65,8 +65,10 @@ public class AttendanceController {
     }
     
     @PostMapping("/save")
-    public String saveAttendance(@Valid @ModelAttribute Attendance attendance,
+    public String saveAttendance(@ModelAttribute Attendance attendance,
                                 @RequestParam(required = false) Long employeeId,
+                                @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) java.time.LocalDateTime checkIn,
+                                @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) java.time.LocalDateTime checkOut,
                                 BindingResult result,
                                 Model model,
                                 RedirectAttributes redirectAttributes) {
@@ -76,6 +78,19 @@ public class AttendanceController {
             attendance.setEmployee(employee);
         }
         
+        // Set checkIn and checkOut if provided
+        if (checkIn != null) {
+            attendance.setCheckIn(checkIn);
+        }
+        if (checkOut != null) {
+            attendance.setCheckOut(checkOut);
+        }
+        
+        // If checkIn is not set but date is set, set checkIn to start of day
+        if (attendance.getCheckIn() == null && attendance.getDate() != null) {
+            attendance.setCheckIn(attendance.getDate().atStartOfDay());
+        }
+        
         if (result.hasErrors()) {
             model.addAttribute("employees", employeeService.getActiveEmployees());
             return "admin/attendances/form";
@@ -83,35 +98,6 @@ public class AttendanceController {
         
         attendanceService.saveAttendance(attendance);
         redirectAttributes.addFlashAttribute("message", "Attendance saved successfully!");
-        return "redirect:/attendances";
-    }
-    
-    @GetMapping("/delete/{id}")
-    public String deleteAttendance(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        attendanceService.deleteAttendance(id);
-        redirectAttributes.addFlashAttribute("message", "Attendance deleted successfully!");
-        return "redirect:/attendances";
-    }
-    
-    @PostMapping("/checkin/{employeeId}")
-    public String checkIn(@PathVariable Long employeeId, RedirectAttributes redirectAttributes) {
-        try {
-            attendanceService.checkIn(employeeId);
-            redirectAttributes.addFlashAttribute("message", "Checked in successfully!");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
-        }
-        return "redirect:/attendances";
-    }
-    
-    @PostMapping("/checkout/{employeeId}")
-    public String checkOut(@PathVariable Long employeeId, RedirectAttributes redirectAttributes) {
-        try {
-            attendanceService.checkOut(employeeId);
-            redirectAttributes.addFlashAttribute("message", "Checked out successfully!");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
-        }
-        return "redirect:/attendances";
+        return "redirect:/admin/attendances";
     }
 }

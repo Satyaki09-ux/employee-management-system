@@ -11,8 +11,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 import java.util.Optional;
@@ -35,10 +37,12 @@ public class EmployeeTransactionController {
     }
     
     @GetMapping
-    public String listTransactions(Model model, 
+    public String listTransactions(Model model,
                                    @RequestParam(required = false) String search,
                                    @RequestParam(required = false) String invoiceNumber) {
         Employee currentEmployee = getCurrentEmployee();
+
+        // Get transactions for current employee and hierarchy
         List<Payment> transactions = transactionService.getTransactionsForEmployee(currentEmployee);
         
         // Filter by search term (customer name, product name, invoice number)
@@ -88,13 +92,21 @@ public class EmployeeTransactionController {
         }
         
         Payment transaction = transactionOpt.get();
-        
+
         // Verify access
         if (!transactionService.hasAccessToTransaction(currentEmployee, transaction)) {
             return "redirect:/employee/transactions?error=You do not have access to this transaction";
         }
-        
+
+        // Get the employee who created the sale
+        Employee createdByEmployee = null;
+        if (transaction.getSale() != null) {
+            createdByEmployee = employeeService.getEmployeeById(transaction.getSale().getCreatedById())
+                    .orElse(null);
+        }
+
         model.addAttribute("transaction", transaction);
+        model.addAttribute("createdByEmployee", createdByEmployee);
         model.addAttribute("currentEmployee", currentEmployee);
         return "employee/transactions/view";
     }
@@ -114,8 +126,16 @@ public class EmployeeTransactionController {
         if (!transactionService.hasAccessToTransaction(currentEmployee, transaction)) {
             return "redirect:/employee/transactions?error=You do not have access to this transaction";
         }
-        
+
+        // Get the employee who created the sale
+        Employee createdByEmployee = null;
+        if (transaction.getSale() != null) {
+            createdByEmployee = employeeService.getEmployeeById(transaction.getSale().getCreatedById())
+                    .orElse(null);
+        }
+
         model.addAttribute("transaction", transaction);
+        model.addAttribute("createdByEmployee", createdByEmployee);
         model.addAttribute("currentEmployee", currentEmployee);
         return "employee/transactions/invoice";
     }

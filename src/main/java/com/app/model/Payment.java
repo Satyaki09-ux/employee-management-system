@@ -44,7 +44,14 @@ public class Payment {
     
     @Column(unique = true, length = 20)
     private String invoiceNumber;
-    
+
+    @Column(nullable = false)
+    private Boolean settled = false; // Admin marks transaction as settled
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "settled_by_admin")
+    private Admin settledBy; // Who settled the transaction (admin only)
+
     // Getters and Setters
     public Long getId() {
         return id;
@@ -116,5 +123,21 @@ public class Payment {
     
     public void setInvoiceNumber(String invoiceNumber) {
         this.invoiceNumber = invoiceNumber;
+    }
+
+    public Boolean getSettled() {
+        return settled;
+    }
+
+    public void setSettled(Boolean settled) {
+        this.settled = settled;
+    }
+
+    public Admin getSettledBy() {
+        return settledBy;
+    }
+
+    public void setSettledBy(Admin settledBy) {
+        this.settledBy = settledBy;
     }
 }

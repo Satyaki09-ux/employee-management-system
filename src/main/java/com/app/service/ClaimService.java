@@ -2,6 +2,7 @@ package com.app.service;
 
 import com.app.model.Claim;
 import com.app.model.Employee;
+import com.app.model.Admin;
 import com.app.repository.ClaimRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,7 +31,17 @@ public class ClaimService {
         return claimRepository.findByStatus("PENDING");
     }
     
+    public List<Claim> getPendingClaimsForManager(Employee manager) {
+        return claimRepository.findByAssignedToAndStatus(manager, "PENDING");
+    }
+    
     public Claim saveClaim(Claim claim) {
+        // Assign to reporting manager if not already assigned
+        if (claim.getAssignedTo() == null && claim.getEmployee() != null 
+                && claim.getEmployee().getReportingManager() != null) {
+            claim.setAssignedTo(claim.getEmployee().getReportingManager());
+        }
+        
         return claimRepository.save(claim);
     }
     
@@ -60,5 +71,33 @@ public class ClaimService {
     
     public void deleteClaim(Long id) {
         claimRepository.deleteById(id);
+    }
+    
+    /**
+     * Get all approved claims
+     */
+    public List<Claim> getApprovedClaims() {
+        return claimRepository.findByStatus("APPROVED");
+    }
+    
+    /**
+     * Mark claim as paid
+     */
+    @Transactional
+    public Claim markClaimAsPaid(Long claimId, Admin paidBy, String paymentMethod, String transactionReference) {
+        Claim claim = claimRepository.findById(claimId)
+                .orElseThrow(() -> new IllegalArgumentException("Claim not found"));
+        
+        if (!"APPROVED".equals(claim.getStatus())) {
+            throw new IllegalStateException("Only approved claims can be marked as paid");
+        }
+        
+        claim.setIsPaid(true);
+        claim.setPaidBy(paidBy);
+        claim.setPaidAt(LocalDateTime.now());
+        claim.setPaymentMethod(paymentMethod);
+        claim.setTransactionReference(transactionReference);
+        
+        return claimRepository.save(claim);
     }
 }

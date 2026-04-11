@@ -18,9 +18,21 @@ public class Salary {
     @JoinColumn(name = "employee_id", nullable = false)
     private Employee employee;
     
-    @NotNull(message = "Salary month is required")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "released_by")
+    private com.app.model.Admin releasedBy; // Admin who released the salary
+    
+    @NotNull(message = "Start date is required")
     @Column(nullable = false)
-    private LocalDate salaryMonth; // First day of the month
+    private LocalDate startDate; // Salary period start date
+    
+    @NotNull(message = "End date is required")
+    @Column(nullable = false)
+    private LocalDate endDate; // Salary period end date
+    
+    @NotNull(message = "Salary month is required")
+    @Column(name = "salary_month", nullable = false)
+    private LocalDate salaryMonth; // The month for which salary is paid (first day of the month)
     
     @NotNull(message = "Basic salary is required")
     @Column(nullable = false, precision = 10, scale = 2)
@@ -57,6 +69,12 @@ public class Salary {
     @Column
     private LocalDateTime paidAt;
     
+    @Column(name = "transaction_reference", length = 100)
+    private String transactionReference; // NEFT/UPI/IMPS reference
+    
+    @Column(name = "transaction_type", length = 20)
+    private String transactionType; // NEFT, UPI, IMPS
+    
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
@@ -77,6 +95,30 @@ public class Salary {
     
     public void setEmployee(Employee employee) {
         this.employee = employee;
+    }
+    
+    public com.app.model.Admin getReleasedBy() {
+        return releasedBy;
+    }
+    
+    public void setReleasedBy(com.app.model.Admin releasedBy) {
+        this.releasedBy = releasedBy;
+    }
+    
+    public LocalDate getStartDate() {
+        return startDate;
+    }
+    
+    public void setStartDate(LocalDate startDate) {
+        this.startDate = startDate;
+    }
+    
+    public LocalDate getEndDate() {
+        return endDate;
+    }
+    
+    public void setEndDate(LocalDate endDate) {
+        this.endDate = endDate;
     }
     
     public LocalDate getSalaryMonth() {
@@ -173,5 +215,21 @@ public class Salary {
     
     public void setPaidAt(LocalDateTime paidAt) {
         this.paidAt = paidAt;
+    }
+    
+    public String getTransactionReference() {
+        return transactionReference;
+    }
+    
+    public void setTransactionReference(String transactionReference) {
+        this.transactionReference = transactionReference;
+    }
+    
+    public String getTransactionType() {
+        return transactionType;
+    }
+    
+    public void setTransactionType(String transactionType) {
+        this.transactionType = transactionType;
     }
 }

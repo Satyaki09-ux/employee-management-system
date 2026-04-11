@@ -42,21 +42,21 @@ public class ProductService {
     private String generateProductId() {
         SecureRandom random = new SecureRandom();
         String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        StringBuilder productId = new StringBuilder("PG");
-        
-        // Generate 6 more alphanumeric characters (total 8: PG + 6 chars)
+        StringBuilder productId = new StringBuilder("PGES");
+
+        // Generate 6 more alphanumeric characters (total 10: PGES + 6 chars)
         for (int i = 0; i < 6; i++) {
             productId.append(chars.charAt(random.nextInt(chars.length())));
         }
-        
+
         // Ensure uniqueness
         while (productRepository.findByProductId(productId.toString()) != null) {
-            productId = new StringBuilder("PG");
+            productId = new StringBuilder("PGES");
             for (int i = 0; i < 6; i++) {
                 productId.append(chars.charAt(random.nextInt(chars.length())));
             }
         }
-        
+
         return productId.toString();
     }
     

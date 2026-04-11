@@ -46,7 +46,10 @@ public class SalesTarget {
     
     @Column(precision = 5, scale = 2)
     private BigDecimal commissionRate = BigDecimal.ZERO; // Commission percentage (e.g., 5.00 for 5%)
-    
+
+    @Column(precision = 12, scale = 2)
+    private BigDecimal commissionAmount = BigDecimal.ZERO; // Accumulated commission amount
+
     @Column(precision = 12, scale = 2)
     private BigDecimal calculatedSalary;
     
@@ -203,6 +206,14 @@ public class SalesTarget {
     public void setTargetUnits(Integer targetUnits) {
         this.targetUnits = targetUnits;
         calculateTargetAmount();
+    }
+
+    public BigDecimal getCommissionAmount() {
+        return commissionAmount;
+    }
+
+    public void setCommissionAmount(BigDecimal commissionAmount) {
+        this.commissionAmount = commissionAmount;
     }
 }
 

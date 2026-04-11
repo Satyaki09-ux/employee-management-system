@@ -19,7 +19,7 @@
                     <span class="sidebar-menu-text">My Sales Target</span>
                 </a>
             </li>
-            <li class="sidebar-menu-item">
+            <li class="sidebar-menu-item" th:if="${currentEmployee != null and currentEmployee.hierarchyLevel != 'AREA_SALES_MANAGER'}">
                 <a class="sidebar-menu-link" th:href="@{/employee/sales-targets}" th:classappend="${#httpServletRequest != null and #strings.contains(#httpServletRequest.requestURI, '/employee/sales-targets')} ? 'active'">
                     <span class="sidebar-menu-icon"><i class="fas fa-tasks"></i></span>
                     <span class="sidebar-menu-text">Manage Team Targets</span>
@@ -68,15 +68,27 @@
             </li>
             
             <li class="sidebar-menu-item">
-                <a class="sidebar-menu-link" th:href="@{/employee/claims}" th:classappend="${#httpServletRequest != null and #strings.contains(#httpServletRequest.requestURI, '/employee/claims')} ? 'active'">
+                <a class="sidebar-menu-link" th:href="@{/employee/claims}" th:classappend="${#httpServletRequest != null and #strings.contains(#httpServletRequest.requestURI, '/employee/claims') and !#strings.contains(#httpServletRequest.requestURI, '/pending-approvals')} ? 'active'">
                     <span class="sidebar-menu-icon"><i class="fas fa-receipt"></i></span>
                     <span class="sidebar-menu-text">Claims</span>
                 </a>
             </li>
+            <li class="sidebar-menu-item" th:if="${manageableEmployeeTypes != null and !manageableEmployeeTypes.isEmpty()}">
+                <a class="sidebar-menu-link" th:href="@{/employee/claims/pending-approvals}" th:classappend="${#httpServletRequest != null and #strings.contains(#httpServletRequest.requestURI, '/employee/claims/pending-approvals')} ? 'active'">
+                    <span class="sidebar-menu-icon"><i class="fas fa-clipboard-check"></i></span>
+                    <span class="sidebar-menu-text">Pending Claim Approvals</span>
+                </a>
+            </li>
             <li class="sidebar-menu-item">
-                <a class="sidebar-menu-link" th:href="@{/employee/leave-requests}" th:classappend="${#httpServletRequest != null and #strings.contains(#httpServletRequest.requestURI, '/employee/leave-requests')} ? 'active'">
+                <a class="sidebar-menu-link" th:href="@{/employee/leave-requests}" th:classappend="${#httpServletRequest != null and #strings.contains(#httpServletRequest.requestURI, '/employee/leave-requests') and !#strings.contains(#httpServletRequest.requestURI, '/pending-approvals')} ? 'active'">
                     <span class="sidebar-menu-icon"><i class="fas fa-calendar-times"></i></span>
                     <span class="sidebar-menu-text">Leave Requests</span>
+                </a>
+            </li>
+            <li class="sidebar-menu-item" th:if="${manageableEmployeeTypes != null and !manageableEmployeeTypes.isEmpty()}">
+                <a class="sidebar-menu-link" th:href="@{/employee/leave-requests/pending-approvals}" th:classappend="${#httpServletRequest != null and #strings.contains(#httpServletRequest.requestURI, '/employee/leave-requests/pending-approvals')} ? 'active'">
+                    <span class="sidebar-menu-icon"><i class="fas fa-clipboard-check"></i></span>
+                    <span class="sidebar-menu-text">Pending Leave Approvals</span>
                 </a>
             </li>
             
@@ -84,12 +96,6 @@
                 <div class="sidebar-menu-group-title">Personal</div>
             </li>
             
-            <li class="sidebar-menu-item">
-                <a class="sidebar-menu-link" th:href="@{/employee/profile}" th:classappend="${#httpServletRequest != null and #strings.contains(#httpServletRequest.requestURI, '/employee/profile')} ? 'active'">
-                    <span class="sidebar-menu-icon"><i class="fas fa-user-circle"></i></span>
-                    <span class="sidebar-menu-text">Profile</span>
-                </a>
-            </li>
             <li class="sidebar-menu-item">
                 <a class="sidebar-menu-link" th:href="@{/employee/bank-details}" th:classappend="${#httpServletRequest != null and #strings.contains(#httpServletRequest.requestURI, '/employee/bank-details')} ? 'active'">
                     <span class="sidebar-menu-icon"><i class="fas fa-credit-card"></i></span>

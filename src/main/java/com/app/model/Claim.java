@@ -19,6 +19,10 @@ public class Claim {
     @JoinColumn(name = "employee_id", nullable = false)
     private Employee employee;
     
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "assigned_to_id")
+    private Employee assignedTo; // Reporting manager who needs to approve
+    
     @NotBlank(message = "Claim type is required")
     @Column(nullable = false)
     private String claimType; // TRAVEL, MEAL, ACCOMMODATION, MEDICAL, OTHER
@@ -51,6 +55,22 @@ public class Claim {
     @Column
     private LocalDateTime approvedAt;
     
+    @Column(name = "is_paid", nullable = true)
+    private Boolean isPaid = false; // Whether claim has been paid
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "paid_by_id")
+    private com.app.model.Admin paidBy; // Admin who marked claim as paid
+    
+    @Column(name = "paid_at")
+    private LocalDateTime paidAt;
+    
+    @Column(name = "payment_method", length = 20)
+    private String paymentMethod; // NEFT, UPI, CASH
+    
+    @Column(name = "transaction_reference", length = 100)
+    private String transactionReference; // Transaction ID/Reference
+    
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
     
@@ -77,6 +97,14 @@ public class Claim {
     
     public void setEmployee(Employee employee) {
         this.employee = employee;
+    }
+    
+    public Employee getAssignedTo() {
+        return assignedTo;
+    }
+    
+    public void setAssignedTo(Employee assignedTo) {
+        this.assignedTo = assignedTo;
     }
     
     public String getClaimType() {
@@ -149,6 +177,46 @@ public class Claim {
     
     public void setApprovedAt(LocalDateTime approvedAt) {
         this.approvedAt = approvedAt;
+    }
+    
+    public Boolean getIsPaid() {
+        return isPaid != null ? isPaid : false;
+    }
+    
+    public void setIsPaid(Boolean isPaid) {
+        this.isPaid = isPaid;
+    }
+    
+    public com.app.model.Admin getPaidBy() {
+        return paidBy;
+    }
+    
+    public void setPaidBy(com.app.model.Admin paidBy) {
+        this.paidBy = paidBy;
+    }
+    
+    public LocalDateTime getPaidAt() {
+        return paidAt;
+    }
+    
+    public void setPaidAt(LocalDateTime paidAt) {
+        this.paidAt = paidAt;
+    }
+    
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+    
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+    
+    public String getTransactionReference() {
+        return transactionReference;
+    }
+    
+    public void setTransactionReference(String transactionReference) {
+        this.transactionReference = transactionReference;
     }
     
     public LocalDateTime getCreatedAt() {

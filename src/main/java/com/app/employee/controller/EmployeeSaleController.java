@@ -9,7 +9,8 @@ import com.app.service.SaleService;
 import com.app.service.CustomerService;
 import com.app.service.ProductService;
 import com.app.service.EmployeeService;
-import jakarta.validation.Valid;
+import com.app.service.CommissionService;
+import com.app.repository.PaymentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -35,9 +36,15 @@ public class EmployeeSaleController {
     
     @Autowired
     private ProductService productService;
-    
+
     @Autowired
     private EmployeeService employeeService;
+
+    @Autowired
+    private CommissionService commissionService;
+
+    @Autowired
+    private PaymentRepository paymentRepository;
 
     private Employee getCurrentEmployee() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -49,7 +56,7 @@ public class EmployeeSaleController {
     @GetMapping
     public String listSales(Model model, @RequestParam(required = false) String search) {
         Employee currentEmployee = getCurrentEmployee();
-        List<Sale> sales = saleService.getSalesByEmployee(currentEmployee.getId());
+        List<Sale> sales = saleService.getSalesForEmployee(currentEmployee);
         
         if (search != null && !search.isEmpty()) {
             sales = sales.stream()
@@ -81,7 +88,7 @@ public class EmployeeSaleController {
     public String showSaleForm(Model model) {
         Employee currentEmployee = getCurrentEmployee();
         Sale sale = new Sale();
-        sale.setEmployee(currentEmployee);
+        sale.setCreatedById(currentEmployee.getId());
         sale.setSaleDate(LocalDate.now());
         
         // Get accessible customers
@@ -100,9 +107,9 @@ public class EmployeeSaleController {
         Employee currentEmployee = getCurrentEmployee();
         Sale sale = saleService.getSaleById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid sale ID: " + id));
-        
-        // Verify the sale belongs to current employee
-        if (!sale.getEmployee().getId().equals(currentEmployee.getId())) {
+
+        // Verify the current employee has access to this sale based on hierarchy
+        if (!canEmployeeAccessSale(currentEmployee, sale)) {
             throw new RuntimeException("You do not have access to this sale");
         }
         
@@ -110,34 +117,26 @@ public class EmployeeSaleController {
         BigDecimal totalPaid = payments.stream()
                 .map(Payment::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        
+
+        // Get commission information for this sale
+        List<com.app.model.Commission> commissions = commissionService.getCommissionRepository().findBySale(sale);
+
+        // Get the employee who created this sale
+        Employee createdByEmployee = employeeService.getEmployeeById(sale.getCreatedById())
+                .orElse(null);
+
+        // Check if current user can approve commissions for this sale
+        boolean canApproveCommissions = commissionService.canShowApproveButtonForSale(sale, currentEmployee);
+
         model.addAttribute("sale", sale);
         model.addAttribute("payments", payments);
+        model.addAttribute("commissions", commissions);
+        model.addAttribute("createdByEmployee", createdByEmployee);
         model.addAttribute("totalPaid", totalPaid);
         model.addAttribute("remainingAmount", sale.getTotalAmount().subtract(totalPaid));
         model.addAttribute("currentEmployee", currentEmployee);
+        model.addAttribute("canApproveCommissions", canApproveCommissions);
         return "employee/sales/view";
-    }
-
-    @GetMapping("/edit/{id}")
-    public String editSale(@PathVariable Long id, Model model) {
-        Employee currentEmployee = getCurrentEmployee();
-        Sale sale = saleService.getSaleById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid sale ID: " + id));
-        
-        // Verify the sale belongs to current employee
-        if (!sale.getEmployee().getId().equals(currentEmployee.getId())) {
-            throw new RuntimeException("You do not have access to this sale");
-        }
-        
-        List<Customer> customers = customerService.getCustomersForEmployee(currentEmployee);
-        List<Product> products = productService.getActiveProducts();
-        
-        model.addAttribute("sale", sale);
-        model.addAttribute("customers", customers);
-        model.addAttribute("products", products);
-        model.addAttribute("currentEmployee", currentEmployee);
-        return "employee/sales/form";
     }
 
     @PostMapping("/save")
@@ -155,9 +154,12 @@ public class EmployeeSaleController {
                           RedirectAttributes redirectAttributes) {
         Employee currentEmployee = getCurrentEmployee();
         
-        // Set employee
-        sale.setEmployee(currentEmployee);
-        
+        // Set created by
+        sale.setCreatedById(currentEmployee.getId());
+
+        // Set hierarchy fields (promoter, zonal head, cluster head, ASM)
+        employeeService.setSaleHierarchyFields(sale, currentEmployee);
+
         // Set customer
         if (customerId != null) {
             Customer customer = customerService.getCustomerById(customerId)
@@ -189,7 +191,7 @@ public class EmployeeSaleController {
         }
         
         // Validate sale object
-        if (result.hasErrors() || sale.getCustomer() == null || sale.getEmployee() == null) {
+        if (result.hasErrors() || sale.getCustomer() == null || sale.getCreatedById() == null) {
             List<Customer> customers = customerService.getCustomersForEmployee(currentEmployee);
             List<Product> products = productService.getActiveProducts();
             model.addAttribute("customers", customers);
@@ -198,12 +200,15 @@ public class EmployeeSaleController {
             return "employee/sales/form";
         }
         
-        // Set initial status based on payment
-        if (paymentStatus != null && ("COMPLETED".equals(paymentStatus) || "PARTIAL".equals(paymentStatus))) {
-            sale.setStatus(paymentStatus);
+        // Set initial payment status
+        if (paymentStatus != null && ("COMPLETED".equals(paymentStatus) || "PARTIAL".equals(paymentStatus) || "PENDING".equals(paymentStatus))) {
+            sale.setPaymentStatus(paymentStatus);
         } else {
-            sale.setStatus("PENDING");
+            sale.setPaymentStatus("PENDING");
         }
+
+        // Set initial sale status
+        sale.setSaleStatus("IN_PROGRESS");
         
         // Set due date if provided
         if (dueDate != null && !"COMPLETED".equals(paymentStatus)) {
@@ -215,8 +220,19 @@ public class EmployeeSaleController {
         
         // Add payment if provided
         if (paymentAmount != null && paymentAmount.compareTo(BigDecimal.ZERO) > 0 && transactionMode != null && !transactionMode.isEmpty()) {
+            // Validate transaction ID uniqueness if provided
+            if (transactionId != null && !transactionId.trim().isEmpty()) {
+                Payment existingPayment = paymentRepository.findByTransactionId(transactionId.trim());
+                if (existingPayment != null) {
+                    redirectAttributes.addFlashAttribute("error", "Sale saved but payment could not be added: Duplicate transaction reference. This transaction ID has already been used for another payment.");
+                    return "redirect:/employee/sales";
+                }
+            }
+            
             try {
                 saleService.addPayment(savedSale.getId(), paymentAmount, transactionMode, transactionId, paymentNotes, dueDate);
+            } catch (IllegalArgumentException e) {
+                redirectAttributes.addFlashAttribute("error", "Sale saved but payment could not be added: " + e.getMessage());
             } catch (Exception e) {
                 redirectAttributes.addFlashAttribute("error", "Sale saved but payment could not be added: " + e.getMessage());
             }
@@ -226,30 +242,14 @@ public class EmployeeSaleController {
         return "redirect:/employee/sales";
     }
 
-    @GetMapping("/delete/{id}")
-    public String deleteSale(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        Employee currentEmployee = getCurrentEmployee();
-        Sale sale = saleService.getSaleById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid sale ID: " + id));
-        
-        // Verify the sale belongs to current employee
-        if (!sale.getEmployee().getId().equals(currentEmployee.getId())) {
-            throw new RuntimeException("You do not have access to this sale");
-        }
-        
-        saleService.deleteSale(id);
-        redirectAttributes.addFlashAttribute("message", "Sale deleted successfully!");
-        return "redirect:/employee/sales";
-    }
-
     @GetMapping("/{id}/payments/add")
     public String showAddPaymentForm(@PathVariable Long id, Model model) {
         Employee currentEmployee = getCurrentEmployee();
         Sale sale = saleService.getSaleById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid sale ID: " + id));
-        
-        // Verify the sale belongs to current employee
-        if (!sale.getEmployee().getId().equals(currentEmployee.getId())) {
+
+        // Verify the current employee has access to this sale based on hierarchy
+        if (!canEmployeeAccessSale(currentEmployee, sale)) {
             throw new RuntimeException("You do not have access to this sale");
         }
         
@@ -278,9 +278,9 @@ public class EmployeeSaleController {
         Employee currentEmployee = getCurrentEmployee();
         Sale sale = saleService.getSaleById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid sale ID: " + id));
-        
-        // Verify the sale belongs to current employee
-        if (!sale.getEmployee().getId().equals(currentEmployee.getId())) {
+
+        // Verify the current employee has access to this sale based on hierarchy
+        if (!canEmployeeAccessSale(currentEmployee, sale)) {
             throw new RuntimeException("You do not have access to this sale");
         }
         
@@ -302,8 +302,53 @@ public class EmployeeSaleController {
             return "redirect:/employee/sales/" + id + "/payments/add";
         }
         
-        saleService.addPayment(id, amount, transactionMode, transactionId, notes, dueDate);
-        redirectAttributes.addFlashAttribute("message", "Payment added successfully!");
-        return "redirect:/employee/sales/view/" + id;
+        // Validate transaction ID uniqueness if provided
+        if (transactionId != null && !transactionId.trim().isEmpty()) {
+            Payment existingPayment = paymentRepository.findByTransactionId(transactionId.trim());
+            if (existingPayment != null) {
+                redirectAttributes.addFlashAttribute("error", "Duplicate transaction reference. This transaction ID has already been used for another payment.");
+                return "redirect:/employee/sales/" + id + "/payments/add";
+            }
+        }
+        
+        try {
+            saleService.addPayment(id, amount, transactionMode, transactionId, notes, dueDate);
+            redirectAttributes.addFlashAttribute("message", "Payment added successfully!");
+            return "redirect:/employee/sales/view/" + id;
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/employee/sales/" + id + "/payments/add";
+        }
+    }
+
+    @PostMapping("/approve-commission/{commissionId}")
+    public String approveCommission(@PathVariable Long commissionId,
+                                   @RequestParam Long saleId,
+                                   RedirectAttributes redirectAttributes) {
+        Employee currentEmployee = getCurrentEmployee();
+
+        try {
+            commissionService.approveCommission(commissionId, currentEmployee);
+            redirectAttributes.addFlashAttribute("message", "Commission approved successfully!");
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Failed to approve commission: " + e.getMessage());
+        }
+
+        return "redirect:/employee/sales/view/" + saleId;
+    }
+
+    /**
+     * Helper method to check if an employee can access a specific sale based on hierarchy.
+     */
+    private boolean canEmployeeAccessSale(Employee employee, Sale sale) {
+        if (employee == null || sale == null) {
+            return false;
+        }
+
+        // Check if the sale is in the employee's accessible sales list
+        List<Sale> accessibleSales = saleService.getSalesForEmployee(employee);
+        return accessibleSales.stream().anyMatch(s -> s.getId().equals(sale.getId()));
     }
 }

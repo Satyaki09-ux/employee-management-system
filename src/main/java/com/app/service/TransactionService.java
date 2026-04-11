@@ -3,12 +3,16 @@ package com.app.service;
 import com.app.model.Payment;
 import com.app.model.Sale;
 import com.app.model.Employee;
+import com.app.model.SalesTarget;
+import com.app.model.Product;
 import com.app.repository.PaymentRepository;
 import com.app.repository.SaleRepository;
+import com.app.repository.SalesTargetRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -20,10 +24,13 @@ public class TransactionService {
     
     @Autowired
     private PaymentRepository paymentRepository;
-    
+
     @Autowired
     private SaleRepository saleRepository;
-    
+
+    @Autowired
+    private SalesTargetRepository salesTargetRepository;
+
     @Autowired
     private EmployeeService employeeService;
     
@@ -87,7 +94,7 @@ public class TransactionService {
         employeeIds.add(employee.getId());
         
         // Get all sales made by these employees
-        return paymentRepository.findBySaleEmployeeIdIn(employeeIds);
+        return paymentRepository.findBySaleCreatedByIdIn(employeeIds);
     }
     
     /**
@@ -123,7 +130,7 @@ public class TransactionService {
         // Employee has access if:
         // 1. They made the sale, OR
         // 2. The sale was made by someone in their hierarchy
-        Long saleEmployeeId = transaction.getSale().getEmployee().getId();
+        Long saleEmployeeId = transaction.getSale().getCreatedById();
         
         if (saleEmployeeId.equals(employee.getId())) {
             return true;
@@ -131,5 +138,20 @@ public class TransactionService {
         
         List<Long> hierarchyEmployeeIds = employeeService.getAllReportingEmployeeIds(employee);
         return hierarchyEmployeeIds.contains(saleEmployeeId);
+    }
+
+    /**
+     * Saves a transaction (payment)
+     */
+    public Payment saveTransaction(Payment payment) {
+        return paymentRepository.save(payment);
+    }
+
+    /**
+     * Handle sale completion check after transaction settlement
+     */
+    public void calculateCommissionAfterSettlement(Payment payment) {
+        // Payment settlement logic is now handled by SaleService.updatePaymentStatus()
+        // which is called when payments are added or updated
     }
 }

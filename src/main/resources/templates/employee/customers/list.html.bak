@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customers - Employee Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        <header class="top-header">
+            <div class="header-left">
+                <button class="mobile-menu-toggle" onclick="toggleMobileSidebar()" title="Toggle Sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <button class="sidebar-expand-toggle" onclick="toggleSidebar()" title="Expand/Collapse Sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <div class="company-name">Potens Green</div>
+            <form th:action="@{/logout}" method="post" style="display: inline;">
+                <button type="submit" class="logout-btn">Logout</button>
+            </form>
+        </header>
+        <div th:replace="~{fragments/employee-sidebar :: sidebar}"></div>
+        <main class="main-content">
+            <div class="container">
+        <div th:if="${message}" class="alert alert-success">
+            <span th:text="${message}"></span>
+        </div>
+        <div th:if="${error}" class="alert alert-danger">
+            <span th:text="${error}"></span>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Customers</h1>
+            <a th:href="@{/employee/customers/new}" class="btn btn-primary">Add New Customer</a>
+        </div>
+
+        <form th:action="@{/employee/customers}" method="get" class="search-form mb-3">
+            <input type="text" name="search" class="form-control" placeholder="Search customers..." th:value="${search}">
+            <button type="submit" class="btn btn-primary">Search</button>
+            <a th:href="@{/employee/customers}" class="btn btn-secondary">Clear</a>
+        </form>
+
+        <div class="card">
+            <div class="card-body">
+                <table class="table" th:if="${customers != null and !customers.isEmpty()}">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Contact Person</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Area</th>
+                            <th>City</th>
+                            <th>State</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="customer : ${customers}">
+                            <td th:text="${customer.id}"></td>
+                            <td th:text="${customer.contactPerson}"></td>
+                            <td th:text="${customer.email}"></td>
+                            <td th:text="${customer.phone}"></td>
+                            <td th:text="${customer.area != null ? customer.area : '-'}"></td>
+                            <td th:text="${customer.city != null ? customer.city : '-'}"></td>
+                            <td th:text="${customer.state != null ? customer.state : '-'}"></td>
+                            <td>
+                                <span class="badge" 
+                                      th:classappend="${customer.status == 'ACTIVE'} ? 'badge-success' : 
+                                                      (${customer.status == 'POTENTIAL'} ? 'badge-info' : 'badge-danger')"
+                                      th:text="${customer.status}">ACTIVE</span>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a th:href="@{/employee/customers/view/{id}(id=${customer.id})}" class="btn btn-info btn-sm">View</a>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="empty-state" th:if="${customers == null or customers.isEmpty()}">
+                    <p>No customers found.</p>
+                    <a th:href="@{/employee/customers/new}" class="btn btn-primary mt-3">Add First Customer</a>
+                </div>
+            </div>
+        </div>
+            </div>
+        </main>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/sidebar.js}"></script>
+</body>
+</html>

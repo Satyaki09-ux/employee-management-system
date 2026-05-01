@@ -503,8 +503,24 @@
                     <li class="nav-item">
                         <a class="nav-link" href="#contact">Contact</a>
                     </li>
-                    <li class="nav-item ms-3">
-                        <a th:href="@{/employee/login}" class="btn btn-login">Login</a>
+<!--                    <li class="nav-item ms-3">-->
+<!--                        <a th:href="@{/employee/login}" class="btn btn-login">Login</a>-->
+<!--                    </li>-->
+                    <li class="nav-item ms-3 d-flex align-items-center gap-2">
+
+                        <a href="https://partner-onboard.potensenergy.in"
+                           class="btn btn-login">
+                            Partner Login
+                        </a>
+
+
+                        <span style="font-weight:600; color:#666;">|</span>
+
+                        <a th:href="@{/employee/login}"
+                           class="btn btn-login">
+                            Employee Login
+                        </a>
+
                     </li>
                 </ul>
             </div>

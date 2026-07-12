@@ -102,6 +102,11 @@ public class EmployeeTeamController {
         Employee employee = employeeService.getEmployeeById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid employee ID: " + id));
         model.addAttribute("employee", employee);
+        List<Long> allowedIds = employeeService.getAllReportingEmployeeIds(current);
+
+        if (!allowedIds.contains(employee.getId())) {
+            throw new AccessDeniedException("You do not have permission to access this employee");
+        }
         List<Employee> managers = employeeService
                 .getReportingManagerOptionsForEmployeePortal(current, employee.getHierarchyLevel())
                 .stream()
@@ -115,9 +120,15 @@ public class EmployeeTeamController {
     @GetMapping("/{type}/view/{id}")
     public String view(@PathVariable String type, @PathVariable Long id, Model model) {
         ensureCanManage(type);
+        Employee current = getCurrentEmployee();
         employeeService.getHierarchyForType(type);
         Employee employee = employeeService.getEmployeeById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid employee ID: " + id));
+        List<Long> allowedIds = employeeService.getAllReportingEmployeeIds(current);
+
+        if (!allowedIds.contains(employee.getId())) {
+            throw new AccessDeniedException("You do not have permission to access this employee");
+        }
         model.addAttribute("employee", employee);
         model.addAttribute("createdByDisplay", AuditHelper.formatAuditForDisplay(employee.getCreatedBy()));
         model.addAttribute("lastUpdatedByDisplay", AuditHelper.formatAuditForDisplay(employee.getLastUpdatedBy()));
@@ -135,86 +146,212 @@ public class EmployeeTeamController {
     //     return "redirect:/employee/team/" + type;
     // }
 
-    @PostMapping("/{type}/save")
-    public String save(@PathVariable String type,
-                       @Valid @ModelAttribute Employee employee,
-                       @RequestParam(required = false) Long reportingManagerId,
-                       BindingResult result,
-                       Model model,
-                       RedirectAttributes ra) {
-        ensureCanManage(type);
-        String hierarchy = employeeService.getHierarchyForType(type);
-        if (result.hasErrors()) {
-            String h = employee.getHierarchyLevel() != null ? employee.getHierarchyLevel() : hierarchy;
-//            model.addAttribute("managers", employeeService.getReportingManagerOptionsForAdmin(h));
+//    @PostMapping("/{type}/save")
+//    public String save(@PathVariable String type,
+//                       @Valid @ModelAttribute Employee employee,
+//                       @RequestParam(required = false) Long reportingManagerId,
+//                       BindingResult result,
+//                       Model model,
+//                       RedirectAttributes ra) {
+//        ensureCanManage(type);
+//        String hierarchy = employeeService.getHierarchyForType(type);
+//        if (result.hasErrors()) {
+//            String h = employee.getHierarchyLevel() != null ? employee.getHierarchyLevel() : hierarchy;
+////            model.addAttribute("managers", employeeService.getReportingManagerOptionsForAdmin(h));
+//            model.addAttribute("managers",
+//                    employeeService.getReportingManagerOptionsForEmployeePortal(getCurrentEmployee(), h));
+//            if (reportingManagerId != null) {
+//                employee.setReportingManager(employeeService.getEmployeeById(reportingManagerId).orElse(null));
+//            } else if (employee.getId() == null) {
+//                employee.setReportingManager(getCurrentEmployee());
+//            }
+//            addTypeAttributes(model, type);
+//            return "employee/team/form";
+//        }
+//
+//        // Check for duplicate email and phone (both must be unique independently)
+//        if (employee.getId() == null) {
+//            // Check email uniqueness
+//            if (employeeService.emailExists(employee.getEmail())) {
+//                result.rejectValue("email", "error.employee", "An employee with this email already exists");
+//                model.addAttribute("managers", employeeService.getReportingManagerOptionsForAdmin(hierarchy));
+//                addTypeAttributes(model, type);
+//                return "employee/team/form";
+//            }
+//            // Check phone uniqueness
+//            if (employeeService.phoneExists(employee.getPhone())) {
+//                result.rejectValue("phone", "error.employee", "An employee with this phone number already exists");
+//                model.addAttribute("managers", employeeService.getReportingManagerOptionsForAdmin(hierarchy));
+//                addTypeAttributes(model, type);
+//                return "employee/team/form";
+//            }
+//        } else {
+//            // Check email uniqueness for other employees
+//            if (employeeService.emailExistsForOtherEmployee(employee.getEmail(), employee.getId())) {
+//                result.rejectValue("email", "error.employee", "An employee with this email already exists");
+//                model.addAttribute("managers", employeeService.getReportingManagerOptionsForAdmin(
+//                        employee.getHierarchyLevel()));
+//                addTypeAttributes(model, type);
+//                return "employee/team/form";
+//            }
+//            // Check phone uniqueness for other employees
+//            if (employeeService.phoneExistsForOtherEmployee(employee.getPhone(), employee.getId())) {
+//                result.rejectValue("phone", "error.employee", "An employee with this phone number already exists");
+//                model.addAttribute("managers", employeeService.getReportingManagerOptionsForAdmin(
+//                        employee.getHierarchyLevel()));
+//                addTypeAttributes(model, type);
+//                return "employee/team/form";
+//            }
+//        }
+//
+//        if (reportingManagerId != null) {
+//            employee.setReportingManager(
+//                    employeeService.getEmployeeById(reportingManagerId).orElse(null));
+//        } else {
+//            employee.setReportingManager(null);
+//        }
+//
+//        if (employee.getHierarchyLevel() == null || employee.getHierarchyLevel().isEmpty()) {
+//            employee.setHierarchyLevel(hierarchy);
+//        }
+//
+//        String audit = AuditHelper.currentUserAuditString();
+//        if (employee.getId() == null) {
+//            employee.setCreatedBy(audit);
+//        } else {
+//            employeeService.getEmployeeById(employee.getId())
+//                    .ifPresent(existing -> employee.setCreatedBy(existing.getCreatedBy()));
+//            employee.setLastUpdatedBy(audit);
+//        }
+//
+//        employeeService.saveEmployee(employee);
+//        ra.addFlashAttribute("message", employeeService.getLabelForType(type) + " saved successfully!");
+//        return "redirect:/employee/team/" + type;
+//    }
+
+
+@PostMapping("/{type}/save")
+public String save(@PathVariable String type,
+                   @Valid @ModelAttribute Employee employee,
+                   @RequestParam(required = false) Long reportingManagerId,
+                   BindingResult result,
+                   Model model,
+                   RedirectAttributes ra) {
+
+    ensureCanManage(type);
+
+    Employee currentEmployee = getCurrentEmployee();
+    String hierarchy = employeeService.getHierarchyForType(type);
+
+    if (employee.getHierarchyLevel() == null || employee.getHierarchyLevel().isEmpty()) {
+        employee.setHierarchyLevel(hierarchy);
+    }
+
+    if (result.hasErrors()) {
+        model.addAttribute("managers",
+                employeeService.getReportingManagerOptionsForEmployeePortal(
+                        currentEmployee,
+                        employee.getHierarchyLevel()
+                ));
+
+        if (reportingManagerId != null) {
+            employee.setReportingManager(employeeService.getEmployeeById(reportingManagerId).orElse(null));
+        } else if (employee.getId() == null) {
+            employee.setReportingManager(currentEmployee);
+        }
+
+        addTypeAttributes(model, type);
+        return "employee/team/form";
+    }
+
+    if (employee.getId() != null) {
+        List<Long> allowedEmployeeIds = employeeService.getAllReportingEmployeeIds(currentEmployee);
+
+        if (!allowedEmployeeIds.contains(employee.getId())) {
+            throw new AccessDeniedException("You do not have permission to update this employee");
+        }
+    }
+
+    if (employee.getId() == null) {
+        if (employeeService.emailExists(employee.getEmail())) {
+            result.rejectValue("email", "error.employee", "An employee with this email already exists");
             model.addAttribute("managers",
-                    employeeService.getReportingManagerOptionsForEmployeePortal(getCurrentEmployee(), h));
-            if (reportingManagerId != null) {
-                employee.setReportingManager(employeeService.getEmployeeById(reportingManagerId).orElse(null));
-            } else if (employee.getId() == null) {
-                employee.setReportingManager(getCurrentEmployee());
-            }
+                    employeeService.getReportingManagerOptionsForEmployeePortal(
+                            currentEmployee,
+                            employee.getHierarchyLevel()
+                    ));
             addTypeAttributes(model, type);
             return "employee/team/form";
         }
 
-        // Check for duplicate email and phone (both must be unique independently)
-        if (employee.getId() == null) {
-            // Check email uniqueness
-            if (employeeService.emailExists(employee.getEmail())) {
-                result.rejectValue("email", "error.employee", "An employee with this email already exists");
-                model.addAttribute("managers", employeeService.getReportingManagerOptionsForAdmin(hierarchy));
-                addTypeAttributes(model, type);
-                return "employee/team/form";
-            }
-            // Check phone uniqueness
-            if (employeeService.phoneExists(employee.getPhone())) {
-                result.rejectValue("phone", "error.employee", "An employee with this phone number already exists");
-                model.addAttribute("managers", employeeService.getReportingManagerOptionsForAdmin(hierarchy));
-                addTypeAttributes(model, type);
-                return "employee/team/form";
-            }
-        } else {
-            // Check email uniqueness for other employees
-            if (employeeService.emailExistsForOtherEmployee(employee.getEmail(), employee.getId())) {
-                result.rejectValue("email", "error.employee", "An employee with this email already exists");
-                model.addAttribute("managers", employeeService.getReportingManagerOptionsForAdmin(
-                        employee.getHierarchyLevel()));
-                addTypeAttributes(model, type);
-                return "employee/team/form";
-            }
-            // Check phone uniqueness for other employees
-            if (employeeService.phoneExistsForOtherEmployee(employee.getPhone(), employee.getId())) {
-                result.rejectValue("phone", "error.employee", "An employee with this phone number already exists");
-                model.addAttribute("managers", employeeService.getReportingManagerOptionsForAdmin(
-                        employee.getHierarchyLevel()));
-                addTypeAttributes(model, type);
-                return "employee/team/form";
-            }
+        if (employeeService.phoneExists(employee.getPhone())) {
+            result.rejectValue("phone", "error.employee", "An employee with this phone number already exists");
+            model.addAttribute("managers",
+                    employeeService.getReportingManagerOptionsForEmployeePortal(
+                            currentEmployee,
+                            employee.getHierarchyLevel()
+                    ));
+            addTypeAttributes(model, type);
+            return "employee/team/form";
+        }
+    } else {
+        if (employeeService.emailExistsForOtherEmployee(employee.getEmail(), employee.getId())) {
+            result.rejectValue("email", "error.employee", "An employee with this email already exists");
+            model.addAttribute("managers",
+                    employeeService.getReportingManagerOptionsForEmployeePortal(
+                            currentEmployee,
+                            employee.getHierarchyLevel()
+                    ));
+            addTypeAttributes(model, type);
+            return "employee/team/form";
         }
 
-        if (reportingManagerId != null) {
-            employee.setReportingManager(
-                    employeeService.getEmployeeById(reportingManagerId).orElse(null));
-        } else {
-            employee.setReportingManager(null);
+        if (employeeService.phoneExistsForOtherEmployee(employee.getPhone(), employee.getId())) {
+            result.rejectValue("phone", "error.employee", "An employee with this phone number already exists");
+            model.addAttribute("managers",
+                    employeeService.getReportingManagerOptionsForEmployeePortal(
+                            currentEmployee,
+                            employee.getHierarchyLevel()
+                    ));
+            addTypeAttributes(model, type);
+            return "employee/team/form";
         }
-
-        if (employee.getHierarchyLevel() == null || employee.getHierarchyLevel().isEmpty()) {
-            employee.setHierarchyLevel(hierarchy);
-        }
-
-        String audit = AuditHelper.currentUserAuditString();
-        if (employee.getId() == null) {
-            employee.setCreatedBy(audit);
-        } else {
-            employeeService.getEmployeeById(employee.getId())
-                    .ifPresent(existing -> employee.setCreatedBy(existing.getCreatedBy()));
-            employee.setLastUpdatedBy(audit);
-        }
-
-        employeeService.saveEmployee(employee);
-        ra.addFlashAttribute("message", employeeService.getLabelForType(type) + " saved successfully!");
-        return "redirect:/employee/team/" + type;
     }
+
+    List<Employee> allowedManagers =
+            employeeService.getReportingManagerOptionsForEmployeePortal(
+                    currentEmployee,
+                    employee.getHierarchyLevel()
+            );
+
+    if (reportingManagerId != null) {
+        boolean validManager = allowedManagers.stream()
+                .anyMatch(manager -> manager.getId().equals(reportingManagerId));
+
+        if (!validManager) {
+            throw new AccessDeniedException("Invalid reporting manager selected");
+        }
+
+        employee.setReportingManager(
+                employeeService.getEmployeeById(reportingManagerId).orElse(null)
+        );
+    } else {
+        employee.setReportingManager(null);
+    }
+
+    String audit = AuditHelper.currentUserAuditString();
+
+    if (employee.getId() == null) {
+        employee.setCreatedBy(audit);
+    } else {
+        employeeService.getEmployeeById(employee.getId())
+                .ifPresent(existing -> employee.setCreatedBy(existing.getCreatedBy()));
+        employee.setLastUpdatedBy(audit);
+    }
+
+    employeeService.saveEmployee(employee);
+
+    ra.addFlashAttribute("message", employeeService.getLabelForType(type) + " saved successfully!");
+    return "redirect:/employee/team/" + type;
+}
 }

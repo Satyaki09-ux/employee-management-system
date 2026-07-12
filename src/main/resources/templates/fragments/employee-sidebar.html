@@ -12,16 +12,39 @@
             <li class="sidebar-menu-group">
                 <div class="sidebar-menu-group-title">Work</div>
             </li>
-            
-            <li class="sidebar-menu-item">
-                <a class="sidebar-menu-link" th:href="@{/employee/sales-target}" th:classappend="${#httpServletRequest != null and #strings.contains(#httpServletRequest.requestURI, '/employee/sales-target')} ? 'active'">
-                    <span class="sidebar-menu-icon"><i class="fas fa-bullseye"></i></span>
+
+            <li class="sidebar-menu-item"
+                th:if="${currentEmployee != null
+            and currentEmployee.hierarchyLevel != 'OFFICE_EXECUTIVE'}">
+
+                <a class="sidebar-menu-link"
+                   th:href="@{/employee/sales-target}"
+                   th:classappend="${#httpServletRequest != null
+                        and #strings.contains(#httpServletRequest.requestURI, '/employee/sales-target')}
+                        ? 'active'">
+
+        <span class="sidebar-menu-icon">
+            <i class="fas fa-bullseye"></i>
+        </span>
+
                     <span class="sidebar-menu-text">My Sales Target</span>
                 </a>
             </li>
-            <li class="sidebar-menu-item" th:if="${currentEmployee != null and currentEmployee.hierarchyLevel != 'AREA_SALES_MANAGER'}">
-                <a class="sidebar-menu-link" th:href="@{/employee/sales-targets}" th:classappend="${#httpServletRequest != null and #strings.contains(#httpServletRequest.requestURI, '/employee/sales-targets')} ? 'active'">
-                    <span class="sidebar-menu-icon"><i class="fas fa-tasks"></i></span>
+            <li class="sidebar-menu-item"
+                th:if="${currentEmployee != null
+            and currentEmployee.hierarchyLevel != 'AREA_SALES_MANAGER'
+            and currentEmployee.hierarchyLevel != 'OFFICE_EXECUTIVE'}">
+
+                <a class="sidebar-menu-link"
+                   th:href="@{/employee/sales-targets}"
+                   th:classappend="${#httpServletRequest != null
+                        and #strings.contains(#httpServletRequest.requestURI, '/employee/sales-targets')}
+                        ? 'active'">
+
+        <span class="sidebar-menu-icon">
+            <i class="fas fa-tasks"></i>
+        </span>
+
                     <span class="sidebar-menu-text">Manage Team Targets</span>
                 </a>
             </li>
@@ -56,7 +79,7 @@
                 <ul class="sidebar-submenu">
                     <li th:each="menuType : ${manageableEmployeeTypes}" class="sidebar-submenu-item" th:with="label=${manageableEmployeeTypeLabels != null ? manageableEmployeeTypeLabels.get(menuType) : menuType}">
                         <a class="sidebar-submenu-link" th:href="@{/employee/team/{t}(t=${menuType})}" th:classappend="${#httpServletRequest != null and #strings.contains(#httpServletRequest.requestURI, '/employee/team/' + menuType)} ? 'active'">
-                            <span class="sidebar-submenu-icon"><i th:class="${'fas ' + (menuType == 'zonal-heads' ? 'fa-user-tag' : (menuType == 'cluster-heads' ? 'fa-users' : 'fa-user-cog'))}"></i></span>
+                            <span class="sidebar-submenu-icon"><i th:class="${'fas ' + (menuType == 'zonal-heads' ? 'fa-user-tag' : (menuType == 'cluster-heads' ? 'fa-users' : (menuType == 'office-executives' ? 'fa-briefcase' : 'fa-user') ))}"></i></span>
                             <span class="sidebar-submenu-text" th:text="${label}">Label</span>
                         </a>
                     </li>

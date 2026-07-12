@@ -51,6 +51,12 @@
                             <span class="sidebar-submenu-text">Area Sales Manager</span>
                         </a>
                     </li>
+                    <li class="sidebar-submenu-item">
+                        <a class="sidebar-submenu-link" th:href="@{/admin/employees/office-executives}" th:classappend="${#httpServletRequest != null and #strings.contains(#httpServletRequest.requestURI, '/admin/employees/office-executives')} ? 'active'">
+                            <span class="sidebar-submenu-icon"><i class="fas fa-briefcase"></i></span>
+                            <span class="sidebar-submenu-text">Office Executive</span>
+                        </a>
+                    </li>
                 </ul>
             </li>
             <li class="sidebar-menu-item" th:if="${currentAdmin != null and currentAdmin.hasPermission('ATTENDANCE')}">

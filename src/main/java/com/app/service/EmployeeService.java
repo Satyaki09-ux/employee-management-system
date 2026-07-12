@@ -155,6 +155,7 @@ public class EmployeeService {
             case "ZONAL_HEAD" -> getActiveEmployees().stream().filter(e -> "PROMOTER".equals(e.getHierarchyLevel())).toList();
             case "CLUSTER_HEAD" -> getActiveEmployees().stream().filter(e -> "ZONAL_HEAD".equals(e.getHierarchyLevel())).toList();
             case "AREA_SALES_MANAGER" -> getActiveEmployees().stream().filter(e -> "CLUSTER_HEAD".equals(e.getHierarchyLevel())).toList();
+            case "OFFICE_EXECUTIVE" -> getActiveEmployees().stream().filter(e -> "PROMOTER".equals(e.getHierarchyLevel())).toList();
             default -> List.of();
         };
     }
@@ -192,7 +193,8 @@ public class EmployeeService {
             "promoters", "PROMOTER",
             "zonal-heads", "ZONAL_HEAD",
             "cluster-heads", "CLUSTER_HEAD",
-            "area-sales-managers", "AREA_SALES_MANAGER"
+            "area-sales-managers", "AREA_SALES_MANAGER",
+            "office-executives", "OFFICE_EXECUTIVE"
     );
 
     /** Type slug -> display label. */
@@ -200,7 +202,8 @@ public class EmployeeService {
             "promoters", "Promoter",
             "zonal-heads", "Zonal Head",
             "cluster-heads", "Cluster Head",
-            "area-sales-managers", "Area Sales Manager"
+            "area-sales-managers", "Area Sales Manager",
+            "office-executives", "Office Executive"
     );
 
     /**
@@ -221,10 +224,10 @@ public class EmployeeService {
         if (hierarchyLevel == null) return List.of();
 
         return switch (hierarchyLevel) {
-            case "PROMOTER" -> List.of("zonal-heads", "cluster-heads", "area-sales-managers");
+            case "PROMOTER" -> List.of("zonal-heads", "cluster-heads", "area-sales-managers","office-executives");
             case "ZONAL_HEAD" -> List.of("cluster-heads", "area-sales-managers");
             case "CLUSTER_HEAD" -> List.of("area-sales-managers");
-            case "AREA_SALES_MANAGER" -> List.of();
+            case "AREA_SALES_MANAGER","OFFICE_EXECUTIVE" -> List.of();
             default -> List.of();
         };
     }
@@ -249,6 +252,7 @@ public class EmployeeService {
             case "ZONAL_HEAD" -> "Zonal Head";
             case "CLUSTER_HEAD" -> "Cluster Head";
             case "AREA_SALES_MANAGER" -> "Area Sales Manager";
+            case "OFFICE_EXECUTIVE" -> "Office Executive";
             default -> hierarchyLevel;
         };
     }

@@ -22,14 +22,16 @@ public class EmployeeController {
             "promoters", "PROMOTER",
             "zonal-heads", "ZONAL_HEAD",
             "cluster-heads", "CLUSTER_HEAD",
-            "area-sales-managers", "AREA_SALES_MANAGER"
+            "area-sales-managers", "AREA_SALES_MANAGER",
+            "office-executives", "OFFICE_EXECUTIVE"
     );
 
     private static final Map<String, String> TYPE_TO_LABEL = Map.of(
             "promoters", "Promoter",
             "zonal-heads", "Zonal Head",
             "cluster-heads", "Cluster Head",
-            "area-sales-managers", "Area Sales Manager"
+            "area-sales-managers", "Area Sales Manager",
+            "office-executives", "Office Executive"
     );
 
     @Autowired

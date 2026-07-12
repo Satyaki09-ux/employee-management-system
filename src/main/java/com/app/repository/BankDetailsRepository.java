@@ -12,4 +12,5 @@ import java.util.Optional;
 public interface BankDetailsRepository extends JpaRepository<BankDetails, Long> {
     List<BankDetails> findByEmployee(Employee employee);
     Optional<BankDetails> findByEmployeeAndIsPrimary(Employee employee, Boolean isPrimary);
+
 }

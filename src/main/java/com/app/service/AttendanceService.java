@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,6 +23,8 @@ public class AttendanceService {
     
     @Autowired
     private EmployeeRepository employeeRepository;
+
+    private static final ZoneId INDIA_ZONE = ZoneId.of("Asia/Kolkata");
     
     public List<Attendance> getAllAttendances() {
         return attendanceRepository.findAll();
@@ -47,7 +50,8 @@ public class AttendanceService {
         }
         
         Employee employee = employeeOpt.get();
-        LocalDate today = LocalDate.now();
+//        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(INDIA_ZONE);
         
         Optional<Attendance> existingAttendance = attendanceRepository.findByEmployeeAndDate(employee, today);
         
@@ -56,7 +60,8 @@ public class AttendanceService {
             if (attendance.getCheckIn() != null) {
                 throw new RuntimeException("Employee already checked in today");
             }
-            attendance.setCheckIn(LocalDateTime.now());
+//            attendance.setCheckIn(LocalDateTime.now());
+            attendance.setCheckIn(LocalDateTime.now(INDIA_ZONE));
             attendance.setStatus("PRESENT");
             return attendanceRepository.save(attendance);
         } else {
@@ -76,7 +81,8 @@ public class AttendanceService {
         }
         
         Employee employee = employeeOpt.get();
-        LocalDate today = LocalDate.now();
+//        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(INDIA_ZONE);
         
         Optional<Attendance> attendanceOpt = attendanceRepository.findByEmployeeAndDate(employee, today);
         
@@ -89,7 +95,8 @@ public class AttendanceService {
             throw new RuntimeException("Employee already checked out today");
         }
         
-        attendance.setCheckOut(LocalDateTime.now());
+//        attendance.setCheckOut(LocalDateTime.now());
+        attendance.setCheckOut(LocalDateTime.now(INDIA_ZONE));
         return attendanceRepository.save(attendance);
     }
     

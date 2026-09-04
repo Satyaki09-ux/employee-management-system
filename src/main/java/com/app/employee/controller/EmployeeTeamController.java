@@ -13,6 +13,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import com.app.util.OfficeExecutiveDesignations;
 
 import java.util.List;
 
@@ -87,6 +88,17 @@ public class EmployeeTeamController {
         Employee current = getCurrentEmployee();
         employee.setReportingManager(current);
         model.addAttribute("employee", employee);
+        if ("OFFICE_EXECUTIVE".equals(hierarchy)) {
+            model.addAttribute(
+                    "officeDepartments",
+                    OfficeExecutiveDesignations.getDepartments()
+            );
+
+            model.addAttribute(
+                    "officeDesignations",
+                    List.of()
+            );
+        }
         //model.addAttribute("managers", employeeService.getReportingManagerOptionsForAdmin(hierarchy));
         model.addAttribute("managers",
                 employeeService.getReportingManagerOptionsForEmployeePortal(current, hierarchy));
@@ -102,6 +114,20 @@ public class EmployeeTeamController {
         Employee employee = employeeService.getEmployeeById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid employee ID: " + id));
         model.addAttribute("employee", employee);
+        if ("OFFICE_EXECUTIVE".equals(employee.getHierarchyLevel())) {
+
+            model.addAttribute(
+                    "officeDepartments",
+                    OfficeExecutiveDesignations.getDepartments()
+            );
+
+            model.addAttribute(
+                    "officeDesignations",
+                    OfficeExecutiveDesignations.getDesignationsForDepartment(
+                            employee.getDepartment()
+                    )
+            );
+        }
         List<Long> allowedIds = employeeService.getAllReportingEmployeeIds(current);
 
         if (!allowedIds.contains(employee.getId())) {
@@ -233,8 +259,10 @@ public class EmployeeTeamController {
 @PostMapping("/{type}/save")
 public String save(@PathVariable String type,
                    @Valid @ModelAttribute Employee employee,
-                   @RequestParam(required = false) Long reportingManagerId,
                    BindingResult result,
+                   @RequestParam(required = false) Long reportingManagerId,
+                   @RequestParam(required = false) String department,
+                   @RequestParam(required = false) String position,
                    Model model,
                    RedirectAttributes ra) {
 
@@ -242,6 +270,11 @@ public String save(@PathVariable String type,
 
     Employee currentEmployee = getCurrentEmployee();
     String hierarchy = employeeService.getHierarchyForType(type);
+
+    if ("OFFICE_EXECUTIVE".equals(hierarchy)) {
+        employee.setDepartment(department);
+        employee.setPosition(position);
+    }
 
     if (employee.getHierarchyLevel() == null || employee.getHierarchyLevel().isEmpty()) {
         employee.setHierarchyLevel(hierarchy);
@@ -324,7 +357,12 @@ public String save(@PathVariable String type,
                     employee.getHierarchyLevel()
             );
 
-    if (reportingManagerId != null) {
+    if ("OFFICE_EXECUTIVE".equals(employee.getHierarchyLevel())) {
+
+        // Promoter-created Office Executive always reports to current Promoter
+        employee.setReportingManager(currentEmployee);
+
+    } else if (reportingManagerId != null) {
         boolean validManager = allowedManagers.stream()
                 .anyMatch(manager -> manager.getId().equals(reportingManagerId));
 

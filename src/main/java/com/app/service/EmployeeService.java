@@ -449,6 +449,14 @@ public class EmployeeService {
                 yield List.of();
             }
 
+            case "OFFICE_EXECUTIVE" -> {
+                // Office Executive should report only to the current Promoter
+                if ("PROMOTER".equals(currentEmployee.getHierarchyLevel())) {
+                    yield List.of(currentEmployee);
+                }
+                yield List.of();
+            }
+
             default -> List.of();
         };
     }

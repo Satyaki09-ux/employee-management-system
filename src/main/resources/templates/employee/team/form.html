@@ -61,6 +61,68 @@
                         </div>
                     </div>
 
+
+
+                    <div class="row"
+                         th:if="${employee.hierarchyLevel == 'OFFICE_EXECUTIVE'}">
+
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label">Department *</label>
+
+                                <select class="form-select"
+                                        id="department"
+                                        name="department"
+                                        th:field="*{department}"
+                                        required>
+
+                                    <option value="">-- Select Department --</option>
+
+                                    <option th:each="dept : ${officeDepartments}"
+                                            th:value="${dept}"
+                                            th:text="${dept}">
+                                    </option>
+
+                                </select>
+
+                                <span class="text-danger"
+                                      th:if="${#fields.hasErrors('department')}"
+                                      th:errors="*{department}">
+            </span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label">Designation *</label>
+
+                                <select class="form-select"
+                                        id="position"
+                                        name="position"
+                                        th:field="*{position}"
+                                        required>
+
+                                    <option value="">-- Select Designation --</option>
+
+                                    <option th:each="designation : ${officeDesignations}"
+                                            th:value="${designation}"
+                                            th:text="${designation}">
+                                    </option>
+
+                                </select>
+
+                                <span class="text-danger"
+                                      th:if="${#fields.hasErrors('position')}"
+                                      th:errors="*{position}">
+            </span>
+                            </div>
+                        </div>
+
+                    </div>
+
+
+
+
                     <div class="alert alert-info" th:if="${employee.id == null}">
                         <strong>Note:</strong> Employee ID (username) will be automatically generated starting with "PG" followed by 6 alphanumeric characters. The default password will be the same as the Employee ID.
                     </div>
@@ -164,5 +226,87 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script th:src="@{/js/sidebar.js}"></script>
+    <script th:if="${employee.hierarchyLevel == 'OFFICE_EXECUTIVE'}">
+        const designationMap = {
+            "HR": [
+                "HR Manager",
+                "HR Executive",
+                "Human Resource"
+            ],
+            "Executive": [
+                "CEO"
+            ],
+            "Fintech": [
+                "Fintech Lead"
+            ],
+            "Sales": [
+                "Sales Lead",
+                "Sales Executive",
+                "Inside Sales Executive"
+            ],
+            "Product": [
+                "Product Manager"
+            ],
+            "Tech": [
+                "Tech Lead"
+            ],
+            "Operations": [
+                "Back Office",
+                "Daily Operation",
+                "Operation Team",
+                "Operations Team",
+                "Operation Executive",
+                "Back Office Executive",
+                "Office Executive"
+            ],
+            "Admin / Pantry": [
+                "Chef"
+            ],
+            "Admin / Support": [
+                "Driver",
+                "Back Office Boy",
+                "Office Caretaker"
+            ],
+            "Management": [
+                "Manager",
+                "Zonal Manager",
+                "State Head",
+                "Cluster Head"
+            ],
+            "Finance": [
+                "Finance Executive",
+                "Accountant"
+            ],
+            "Field Sales": [
+                "ASM"
+            ],
+            "Consulting": [
+                "Business Relationship Consultant"
+            ]
+        };
+
+        const departmentSelect = document.getElementById("department");
+        const positionSelect = document.getElementById("position");
+
+        function populateDesignations() {
+            const selectedDepartment = departmentSelect.value;
+
+            positionSelect.innerHTML =
+                '<option value="">-- Select Designation --</option>';
+
+            if (!selectedDepartment || !designationMap[selectedDepartment]) {
+                return;
+            }
+
+            designationMap[selectedDepartment].forEach(function(designation) {
+                const option = document.createElement("option");
+                option.value = designation;
+                option.textContent = designation;
+                positionSelect.appendChild(option);
+            });
+        }
+
+        departmentSelect.addEventListener("change", populateDesignations);
+    </script>
 </body>
 </html>

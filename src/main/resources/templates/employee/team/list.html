@@ -43,6 +43,8 @@
                             <th>Name</th>
                             <th>Email</th>
                             <th>Phone</th>
+                            <th th:if="${employeeType == 'office-executives'}">Department</th>
+                            <th th:if="${employeeType == 'office-executives'}">Designation</th>
                             <th>Location</th>
                             <th>Reporting Manager</th>
                             <th>Status</th>
@@ -57,6 +59,16 @@
                             <td th:text="${employee.fullName}"></td>
                             <td th:text="${employee.email}"></td>
                             <td th:text="${employee.phone}"></td>
+
+                            <td th:if="${employeeType == 'office-executives'}"
+                                th:text="${employee.department != null ? employee.department : '-'}">
+                                -
+                            </td>
+
+                            <td th:if="${employeeType == 'office-executives'}"
+                                th:text="${employee.position != null ? employee.position : '-'}">
+                                -
+                            </td>
                             <td>
                                 <small th:text="${employee.city + ', ' + employee.state}">City, State</small><br>
                                 <small class="text-muted" th:text="${employee.area}">Area</small>
